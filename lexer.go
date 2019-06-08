@@ -1,5 +1,6 @@
 package json5
 
+// TokenType represents an enum of token types
 type TokenType int
 type lexerState int
 
