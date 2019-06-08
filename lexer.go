@@ -38,7 +38,7 @@ type Lexer struct {
 
 // NewLexer creates a JSON5 Lexer
 func NewLexer(str string) *Lexer {
-	return &Lexer{str: str, buf: []byte{}}
+	return &Lexer{str: str}
 }
 
 func (l *Lexer) readDefault() {
@@ -90,10 +90,16 @@ func (l *Lexer) readString() {
 	}
 }
 
+// Reset resets the internals for next token
+func (l *Lexer) Reset() {
+	l.state = stateDefault
+	l.buf = []byte{}
+	l.ret = token{TypeNull, nil}
+}
+
 // Token gets the next JSON token
 func (l *Lexer) Token() (token, error) {
-	l.state = stateDefault
-	l.ret = token{TypeNull, nil}
+	l.Reset()
 	for {
 		if l.pos >= len(l.str) {
 			// check EOF
