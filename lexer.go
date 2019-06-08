@@ -1,5 +1,7 @@
 package json5
 
+import "io"
+
 type tokenType int
 type lexerState int
 
@@ -16,10 +18,12 @@ const (
 	stateArray
 	stateObject
 	stateString
+	stateEscapeChar
 )
 
 type token struct {
-	Type tokenType
+	Type  tokenType
+	Value interface{}
 }
 
 // Lexer reads and tokenizes a JSON string
@@ -27,16 +31,17 @@ type Lexer struct {
 	str   string
 	pos   int
 	state lexerState
+	buf   []byte
+	ret   token
 	err   error
 }
 
 // NewLexer creates a JSON5 Lexer
 func NewLexer(str string) *Lexer {
-	return &Lexer{str: str}
+	return &Lexer{str: str, buf: []byte{}}
 }
 
 func (l *Lexer) readDefault() {
-	// TODO: check boundary
 	c := l.str[l.pos]
 	switch c {
 	case ' ', '\t', '\n', '\r':
@@ -70,14 +75,31 @@ func (l *Lexer) readValue() {
 }
 
 func (l *Lexer) readString() {
+	c := l.str[l.pos]
+	switch c {
+	case '\\':
+		l.state = stateEscapeChar
+		l.pos++
+	case '"':
+		value := string(l.buf)
+		l.ret = token{typeString, value}
+		l.pos++
+	default:
+		l.buf = append(l.buf, c)
+		l.pos++
+	}
 }
 
 // Token gets the next JSON token
 func (l *Lexer) Token() (token, error) {
 	l.state = stateDefault
+	l.ret = token{typeNull, nil}
 	for {
-		if l.err != nil {
-			return token{typeNull}, l.err
+		if l.pos >= len(l.str) {
+			l.err = io.EOF
+		}
+		if l.ret.Type != typeNull || l.err != nil {
+			return l.ret, l.err
 		}
 		switch l.state {
 		case stateDefault:
@@ -92,6 +114,8 @@ func (l *Lexer) Token() (token, error) {
 			// TODO: read object
 		case stateString:
 			l.readString()
+		case stateEscapeChar:
+			// TODO: read escape char
 		}
 	}
 }
