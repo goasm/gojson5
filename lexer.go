@@ -27,6 +27,7 @@ type Lexer struct {
 	str   string
 	pos   int
 	state lexerState
+	err   error
 }
 
 func (l *Lexer) readDefault() {
@@ -58,6 +59,8 @@ func (l *Lexer) readValue() {
 		// case number
 		// case bool
 		// case null
+	default:
+		l.err = newSyntaxError("unexpected character")
 	}
 }
 
