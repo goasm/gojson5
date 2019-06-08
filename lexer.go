@@ -31,7 +31,7 @@ type Lexer struct {
 }
 
 func (l *Lexer) readDefault() {
-	// check boundary
+	// TODO: check boundary
 	c := l.str[l.pos]
 	switch c {
 	case ' ', '\t', '\n', '\r':
@@ -56,9 +56,9 @@ func (l *Lexer) readValue() {
 	case '"':
 		l.state = stateString
 		l.pos++
-		// case number
-		// case bool
-		// case null
+		// TODO: case number
+		// TODO: case bool
+		// TODO: case null
 	default:
 		l.err = badCharError(c, l.pos)
 	}
@@ -72,7 +72,7 @@ func (l *Lexer) Token() (token, error) {
 		case stateDefault:
 			l.readDefault()
 		case stateComment:
-			// read comment
+			// TODO: read comment
 		case stateValue:
 			l.readValue()
 		}
