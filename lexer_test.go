@@ -21,3 +21,26 @@ func TestReadString(t *testing.T) {
 	noError(t, err)
 	expectToken(t, t1, json5.TypeEOF)
 }
+
+func TestReadBool(t *testing.T) {
+	lexer := json5.NewLexer(` true false `)
+	t0, err := lexer.Token()
+	noError(t, err)
+	expectToken(t, t0, json5.TypeBool)
+	t1, err := lexer.Token()
+	noError(t, err)
+	expectToken(t, t1, json5.TypeBool)
+	t2, err := lexer.Token()
+	noError(t, err)
+	expectToken(t, t2, json5.TypeEOF)
+}
+
+func TestReadNull(t *testing.T) {
+	lexer := json5.NewLexer(` null `)
+	t0, err := lexer.Token()
+	noError(t, err)
+	expectToken(t, t0, json5.TypeNull)
+	t1, err := lexer.Token()
+	noError(t, err)
+	expectToken(t, t1, json5.TypeEOF)
+}
