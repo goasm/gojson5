@@ -1,36 +1,25 @@
 package json5_test
 
 import (
-	"fmt"
 	"testing"
 
 	json5 "github.com/goasm/gojson5"
 )
 
-func TestLexer(t *testing.T) {
-	lexer := json5.NewLexer(`
-	{
-		"name": "target.json",
-		"foo": "bar",
-		"bar": 120,
-		"baz": true,
-		"qux": null,
-		"list": [0, 2, 4, 8],
-		"dict": {
-			"a": 1,
-			"b": 3,
-			"c": 7
-		}
+func TestReadString(t *testing.T) {
+	lexer := json5.NewLexer(` "foo" `)
+	t0, err := lexer.Token()
+	if err != nil {
+		t.Fatal("Unexpected error:", err)
 	}
-	`)
-	for {
-		token, err := lexer.Token()
-		if token.Type == json5.TypeEOF {
-			break
-		}
-		if err != nil {
-			panic(err)
-		}
-		fmt.Println(token)
+	if t0.Type != json5.TypeString {
+		t.Fatal("Unexpected token:", t0)
+	}
+	t1, err := lexer.Token()
+	if err != nil {
+		t.Fatal("Unexpected error:", err)
+	}
+	if t1.Type != json5.TypeEOF {
+		t.Fatal("Unexpected token:", t1)
 	}
 }
