@@ -3,6 +3,7 @@ package json5
 type tokenType int
 type lexerState int
 
+// Lexer token types
 const (
 	TypeNull tokenType = iota
 	TypeNumber
@@ -95,9 +96,11 @@ func (l *Lexer) Token() (token, error) {
 	l.ret = token{TypeNull, nil}
 	for {
 		if l.pos >= len(l.str) {
+			// check EOF
 			l.ret = token{TypeEOF, nil}
 		}
 		if l.ret.Type != TypeNull || l.err != nil {
+			// check result and error
 			return l.ret, l.err
 		}
 		switch l.state {
