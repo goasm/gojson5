@@ -1,11 +1,11 @@
 package json5
 
-type tokenType int
+type TokenType int
 type lexerState int
 
 // Lexer token types
 const (
-	TypeNone tokenType = iota
+	TypeNone TokenType = iota
 	TypeNumber
 	TypeString
 	TypeBool
@@ -27,7 +27,7 @@ const (
 
 // Token represents an unit for syntax analysis
 type Token struct {
-	Type  tokenType
+	Type  TokenType
 	Value interface{}
 }
 
