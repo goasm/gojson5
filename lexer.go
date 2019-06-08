@@ -60,7 +60,7 @@ func (l *Lexer) readValue() {
 		// case bool
 		// case null
 	default:
-		l.err = newSyntaxError("unexpected character")
+		l.err = badCharError(c, l.pos)
 	}
 }
 
