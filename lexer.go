@@ -25,7 +25,7 @@ const (
 	stateNull
 )
 
-type token struct {
+type Token struct {
 	Type  tokenType
 	Value interface{}
 }
@@ -36,7 +36,7 @@ type Lexer struct {
 	pos   int
 	state lexerState
 	buf   []byte
-	ret   token
+	ret   Token
 	err   error
 }
 
@@ -88,7 +88,7 @@ func (l *Lexer) readString() {
 		l.pos++
 	case '"':
 		value := string(l.buf)
-		l.ret = token{TypeString, value}
+		l.ret = Token{TypeString, value}
 		l.pos++
 	default:
 		l.buf = append(l.buf, c)
@@ -99,9 +99,9 @@ func (l *Lexer) readString() {
 func (l *Lexer) readBool() {
 	p0 := l.pos
 	if expectLiteral(l, "false") {
-		l.ret = token{TypeBool, false}
+		l.ret = Token{TypeBool, false}
 	} else if expectLiteral(l, "true") {
-		l.ret = token{TypeBool, true}
+		l.ret = Token{TypeBool, true}
 	} else {
 		l.err = badTokenError(l.str[p0:l.pos], p0)
 	}
@@ -110,7 +110,7 @@ func (l *Lexer) readBool() {
 func (l *Lexer) readNull() {
 	p0 := l.pos
 	if expectLiteral(l, "null") {
-		l.ret = token{TypeNull, nil}
+		l.ret = Token{TypeNull, nil}
 	} else {
 		l.err = badTokenError(l.str[p0:l.pos], p0)
 	}
@@ -120,16 +120,16 @@ func (l *Lexer) readNull() {
 func (l *Lexer) Reset() {
 	l.state = stateDefault
 	l.buf = []byte{}
-	l.ret = token{TypeNone, nil}
+	l.ret = Token{TypeNone, nil}
 }
 
 // Token gets the next JSON token
-func (l *Lexer) Token() (token, error) {
+func (l *Lexer) Token() (Token, error) {
 	l.Reset()
 	for {
 		if l.pos >= len(l.str) {
 			// check EOF
-			l.ret = token{TypeEOF, nil}
+			l.ret = Token{TypeEOF, nil}
 		}
 		if l.ret.Type != TypeNone || l.err != nil {
 			// check result and error
