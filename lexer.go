@@ -5,10 +5,11 @@ type lexerState int
 
 // Lexer token types
 const (
-	TypeNull tokenType = iota
+	TypeNone tokenType = iota
 	TypeNumber
 	TypeString
 	TypeBool
+	TypeNull
 	TypeEOF
 )
 
@@ -107,13 +108,19 @@ func (l *Lexer) readBool() {
 }
 
 func (l *Lexer) readNull() {
+	p0 := l.pos
+	if expectLiteral(l, "null") {
+		l.ret = token{TypeNull, nil}
+	} else {
+		l.err = badTokenError(l.str[p0:l.pos], p0)
+	}
 }
 
 // Reset resets the internals for next token
 func (l *Lexer) Reset() {
 	l.state = stateDefault
 	l.buf = []byte{}
-	l.ret = token{TypeNull, nil}
+	l.ret = token{TypeNone, nil}
 }
 
 // Token gets the next JSON token
@@ -124,7 +131,7 @@ func (l *Lexer) Token() (token, error) {
 			// check EOF
 			l.ret = token{TypeEOF, nil}
 		}
-		if l.ret.Type != TypeNull || l.err != nil {
+		if l.ret.Type != TypeNone || l.err != nil {
 			// check result and error
 			return l.ret, l.err
 		}
