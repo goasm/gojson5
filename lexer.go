@@ -12,6 +12,10 @@ const (
 const (
 	stateDefault lexerState = iota
 	stateComment
+	stateValue
+	stateArray
+	stateObject
+	stateString
 )
 
 type token struct {
@@ -20,12 +24,54 @@ type token struct {
 
 // Lexer reads and tokenizes a JSON string
 type Lexer struct {
-	str string
-	pos int
+	str   string
+	pos   int
+	state lexerState
+}
+
+func (l *Lexer) readDefault() {
+	// check boundary
+	c := l.str[l.pos]
+	switch c {
+	case ' ', '\t', '\n', '\r':
+		l.pos++
+	case '/':
+		l.state = stateComment
+		l.pos++
+	default:
+		l.state = stateValue
+	}
+}
+
+func (l *Lexer) readValue() {
+	c := l.str[l.pos]
+	switch c {
+	case '[':
+		l.state = stateArray
+		l.pos++
+	case '{':
+		l.state = stateObject
+		l.pos++
+	case '"':
+		l.state = stateString
+		l.pos++
+		// case number
+		// case bool
+		// case null
+	}
 }
 
 // Token gets the next JSON token
 func (l *Lexer) Token() (token, error) {
-	state := stateDefault
-	return
+	l.state = stateDefault
+	for {
+		switch l.state {
+		case stateDefault:
+			l.readDefault()
+		case stateComment:
+			// read comment
+		case stateValue:
+			l.readValue()
+		}
+	}
 }
