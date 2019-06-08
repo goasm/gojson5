@@ -19,3 +19,7 @@ func (e *SyntaxError) Error() string {
 func badCharError(ch byte, index int) *SyntaxError {
 	return newSyntaxError(fmt.Sprintf("unexpected character: %c", ch), index)
 }
+
+func badTokenError(token string, index int) *SyntaxError {
+	return newSyntaxError(fmt.Sprintf("unexpected token: %s", token), index)
+}

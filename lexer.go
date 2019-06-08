@@ -8,6 +8,7 @@ const (
 	TypeNull tokenType = iota
 	TypeNumber
 	TypeString
+	TypeBool
 	TypeEOF
 )
 
@@ -19,6 +20,8 @@ const (
 	stateObject
 	stateString
 	stateEscapeChar
+	stateBool
+	stateNull
 )
 
 type token struct {
@@ -67,8 +70,10 @@ func (l *Lexer) readValue() {
 		l.state = stateString
 		l.pos++
 		// TODO: case number
-		// TODO: case bool
-		// TODO: case null
+	case 'f', 't':
+		l.state = stateBool
+	case 'n':
+		l.state = stateNull
 	default:
 		l.err = badCharError(c, l.pos)
 	}
@@ -88,6 +93,20 @@ func (l *Lexer) readString() {
 		l.buf = append(l.buf, c)
 		l.pos++
 	}
+}
+
+func (l *Lexer) readBool() {
+	p0 := l.pos
+	if expectLiteral(l, "false") {
+		l.ret = token{TypeBool, false}
+	} else if expectLiteral(l, "true") {
+		l.ret = token{TypeBool, true}
+	} else {
+		l.err = badTokenError(l.str[p0:l.pos], p0)
+	}
+}
+
+func (l *Lexer) readNull() {
 }
 
 // Reset resets the internals for next token
@@ -124,6 +143,10 @@ func (l *Lexer) Token() (token, error) {
 			l.readString()
 		case stateEscapeChar:
 			// TODO: read escape char
+		case stateBool:
+			l.readBool()
+		case stateNull:
+			l.readNull()
 		}
 	}
 }
