@@ -25,6 +25,7 @@ const (
 	stateNull
 )
 
+// Token represents an unit for syntax analysis
 type Token struct {
 	Type  tokenType
 	Value interface{}
