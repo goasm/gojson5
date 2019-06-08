@@ -30,6 +30,11 @@ type Lexer struct {
 	err   error
 }
 
+// NewLexer creates a JSON5 Lexer
+func NewLexer(str string) *Lexer {
+	return &Lexer{str: str}
+}
+
 func (l *Lexer) readDefault() {
 	// TODO: check boundary
 	c := l.str[l.pos]
@@ -64,10 +69,16 @@ func (l *Lexer) readValue() {
 	}
 }
 
+func (l *Lexer) readString() {
+}
+
 // Token gets the next JSON token
 func (l *Lexer) Token() (token, error) {
 	l.state = stateDefault
 	for {
+		if l.err != nil {
+			return token{typeNull}, l.err
+		}
 		switch l.state {
 		case stateDefault:
 			l.readDefault()
@@ -75,6 +86,12 @@ func (l *Lexer) Token() (token, error) {
 			// TODO: read comment
 		case stateValue:
 			l.readValue()
+		case stateArray:
+			// TODO: read array
+		case stateObject:
+			// TODO: read object
+		case stateString:
+			l.readString()
 		}
 	}
 }

@@ -8,7 +8,7 @@ import (
 )
 
 func TestLexer(t *testing.T) {
-	lexer := json5.Lexer{`
+	lexer := json5.NewLexer(`
 	{
 		"name": "target.json",
 		"foo": "bar",
@@ -22,11 +22,11 @@ func TestLexer(t *testing.T) {
 			"c": 7
 		}
 	}
-	`}
+	`)
 	for {
 		token, err := lexer.Token()
-		if err == nil {
-			break
+		if err != nil {
+			panic(err)
 		}
 		fmt.Println(token)
 	}
