@@ -8,5 +8,11 @@ func noError(t *testing.T, err error) {
 	}
 }
 
+func equals(t *testing.T, expected, actual interface{}) {
+	if actual != expected {
+		t.Fatal("Not equal:", expected, "==", actual)
+	}
+}
+
 func TestDecoding(t *testing.T) {
 }
