@@ -25,6 +25,9 @@ func TestLexer(t *testing.T) {
 	`)
 	for {
 		token, err := lexer.Token()
+		if token.Type == json5.TypeEOF {
+			break
+		}
 		if err != nil {
 			panic(err)
 		}

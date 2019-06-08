@@ -1,14 +1,13 @@
 package json5
 
-import "io"
-
 type tokenType int
 type lexerState int
 
 const (
-	typeNull tokenType = iota
-	typeNumber
-	typeString
+	TypeNull tokenType = iota
+	TypeNumber
+	TypeString
+	TypeEOF
 )
 
 const (
@@ -82,7 +81,7 @@ func (l *Lexer) readString() {
 		l.pos++
 	case '"':
 		value := string(l.buf)
-		l.ret = token{typeString, value}
+		l.ret = token{TypeString, value}
 		l.pos++
 	default:
 		l.buf = append(l.buf, c)
@@ -93,12 +92,12 @@ func (l *Lexer) readString() {
 // Token gets the next JSON token
 func (l *Lexer) Token() (token, error) {
 	l.state = stateDefault
-	l.ret = token{typeNull, nil}
+	l.ret = token{TypeNull, nil}
 	for {
 		if l.pos >= len(l.str) {
-			l.err = io.EOF
+			l.ret = token{TypeEOF, nil}
 		}
-		if l.ret.Type != typeNull || l.err != nil {
+		if l.ret.Type != TypeNull || l.err != nil {
 			return l.ret, l.err
 		}
 		switch l.state {
