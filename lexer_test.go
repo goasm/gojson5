@@ -80,3 +80,16 @@ func TestReadMultipleLineComment(t *testing.T) {
 	noError(t, err)
 	expectToken(t, t1, json5.TypeEOF)
 }
+
+func TestReadUnclosedComment(t *testing.T) {
+	lexer := json5.NewLexer(`
+	null /* ==== Unclosed comment ====
+	`)
+	t0, err := lexer.Token()
+	noError(t, err)
+	expectToken(t, t0, json5.TypeNull)
+	equals(t, nil, t0.Value)
+	t1, err := lexer.Token()
+	hasError(t, err, "unexpected end of JSON")
+	expectToken(t, t1, json5.TypeNone)
+}
