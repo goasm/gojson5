@@ -23,6 +23,28 @@ func TestReadString(t *testing.T) {
 	expectToken(t, t1, json5.TypeEOF)
 }
 
+func TestReadIntegerNumber(t *testing.T) {
+	lexer := json5.NewLexer(` 5 `)
+	t0, err := lexer.Token()
+	noError(t, err)
+	expectToken(t, t0, json5.TypeNumber)
+	equals(t, 5, t0.Value)
+	t1, err := lexer.Token()
+	noError(t, err)
+	expectToken(t, t1, json5.TypeEOF)
+}
+
+func TestReadNegativeIntegerNumber(t *testing.T) {
+	lexer := json5.NewLexer(` -10 `)
+	t0, err := lexer.Token()
+	noError(t, err)
+	expectToken(t, t0, json5.TypeNumber)
+	equals(t, -10, t0.Value)
+	t1, err := lexer.Token()
+	noError(t, err)
+	expectToken(t, t1, json5.TypeEOF)
+}
+
 func TestReadBool(t *testing.T) {
 	lexer := json5.NewLexer(` true false `)
 	t0, err := lexer.Token()
