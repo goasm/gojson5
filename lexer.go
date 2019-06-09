@@ -26,7 +26,7 @@ const (
 	stateString
 	stateEscapeChar
 	stateNumber
-	stateNumberSign
+	stateSignedNumber
 	stateDigitZero
 	stateDecimalInteger
 	stateBool
@@ -157,7 +157,7 @@ func (l *Lexer) readNumber() {
 	c := l.str[l.pos]
 	switch c {
 	case '-':
-		l.state = stateNumberSign
+		l.state = stateSignedNumber
 		l.buf = append(l.buf, c)
 		l.pos++
 	case '0':
@@ -171,7 +171,7 @@ func (l *Lexer) readNumber() {
 	}
 }
 
-func (l *Lexer) readNumberSign() {
+func (l *Lexer) readSignedNumber() {
 	c := l.str[l.pos]
 	switch c {
 	case '0':
@@ -297,8 +297,8 @@ func (l *Lexer) Token() (Token, error) {
 			// TODO: read escape char
 		case stateNumber:
 			l.readNumber()
-		case stateNumberSign:
-			l.readNumberSign()
+		case stateSignedNumber:
+			l.readSignedNumber()
 		case stateDigitZero:
 			l.readDigitZero()
 		case stateDecimalInteger:
