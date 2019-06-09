@@ -220,7 +220,8 @@ func (l *Lexer) readDecimalInteger() {
 	case '.':
 		// TODO: float point
 	default:
-		l.err = badCharError(c, l.pos)
+		value := parseDecimalInteger(string(l.buf))
+		l.ret = Token{TypeNumber, value}
 	}
 }
 

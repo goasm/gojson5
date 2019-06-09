@@ -1,5 +1,7 @@
 package json5
 
+import "strconv"
+
 func expectLiteral(l *Lexer, expected string) bool {
 	maxLen := len(l.str) - l.pos
 	i := 0
@@ -11,4 +13,12 @@ func expectLiteral(l *Lexer, expected string) bool {
 		}
 	}
 	return i == len(expected)
+}
+
+func parseDecimalInteger(s string) int {
+	value, err := strconv.ParseInt(s, 10, 64)
+	if err != nil {
+		panic(err)
+	}
+	return int(value)
 }
