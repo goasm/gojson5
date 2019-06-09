@@ -7,8 +7,8 @@ type lexerState int
 // Lexer token types
 const (
 	TypeNone TokenType = iota
-	TypeNumber
 	TypeString
+	TypeNumber
 	TypeBool
 	TypeNull
 	TypeEOF
@@ -25,6 +25,10 @@ const (
 	stateObject
 	stateString
 	stateEscapeChar
+	stateNumber
+	stateNumberSign
+	stateDigitZero
+	stateDecimalInteger
 	stateBool
 	stateNull
 )
@@ -122,7 +126,8 @@ func (l *Lexer) readValue() {
 	case '"':
 		l.state = stateString
 		l.pos++
-		// TODO: case number
+	case '-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
+		l.state = stateNumber
 	case 'f', 't':
 		l.state = stateBool
 	case 'n':
@@ -143,6 +148,24 @@ func (l *Lexer) readString() {
 		l.ret = Token{TypeString, value}
 		l.pos++
 	default:
+		l.buf = append(l.buf, c)
+		l.pos++
+	}
+}
+
+func (l *Lexer) readNumber() {
+	c := l.str[l.pos]
+	switch c {
+	case '-':
+		l.state = stateNumberSign
+		l.buf = append(l.buf, c)
+		l.pos++
+	case '0':
+		l.state = stateDigitZero
+		l.buf = append(l.buf, c)
+		l.pos++
+	case '1', '2', '3', '4', '5', '6', '7', '8', '9':
+		l.state = stateDecimalInteger
 		l.buf = append(l.buf, c)
 		l.pos++
 	}
@@ -233,6 +256,14 @@ func (l *Lexer) Token() (Token, error) {
 			l.readString()
 		case stateEscapeChar:
 			// TODO: read escape char
+		case stateNumber:
+			l.readNumber()
+		case stateNumberSign:
+			// TODO: read number sign
+		case stateDigitZero:
+			// TODO: read digit zero
+		case stateDecimalInteger:
+			// TODO: read decimal integer
 		case stateBool:
 			l.readBool()
 		case stateNull:
