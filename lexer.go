@@ -19,6 +19,7 @@ const (
 	stateComment
 	stateSingleLineComment
 	stateMultipleLineComment
+	stateMultipleLineCommentEndAsterisk
 	stateValue
 	stateArray
 	stateObject
@@ -82,10 +83,31 @@ func (l *Lexer) readSingleLineComment() {
 	case '\n', '\r':
 		l.state = stateDefault
 		l.pos++
+	default:
+		l.pos++
 	}
 }
 
 func (l *Lexer) readMultipleLineComment() {
+	c := l.str[l.pos]
+	switch c {
+	case '*':
+		l.state = stateMultipleLineCommentEndAsterisk
+		l.pos++
+	default:
+		l.pos++
+	}
+}
+
+func (l *Lexer) readMultipleLineCommentEndAsterisk() {
+	c := l.str[l.pos]
+	switch c {
+	case '/':
+		l.state = stateDefault
+		l.pos++
+	default:
+		l.pos++
+	}
 }
 
 func (l *Lexer) readValue() {
@@ -181,6 +203,8 @@ func (l *Lexer) Token() (Token, error) {
 			l.readSingleLineComment()
 		case stateMultipleLineComment:
 			l.readMultipleLineComment()
+		case stateMultipleLineCommentEndAsterisk:
+			l.readMultipleLineCommentEndAsterisk()
 		case stateValue:
 			l.readValue()
 		case stateArray:
