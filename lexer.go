@@ -175,6 +175,9 @@ func (l *Lexer) readNull() {
 	l.err = badTokenError(l.str[p0:l.pos], p0)
 }
 
+// TODO: new state handler
+// func (l *Lexer) readXxx() {}
+
 func (l *Lexer) checkEndState() error {
 	switch l.state {
 	case stateMultipleLineComment, stateMultipleLineCommentEndAsterisk:
