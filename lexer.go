@@ -235,5 +235,9 @@ func (l *Lexer) Token() (Token, error) {
 		case stateNull:
 			l.readNull()
 		}
+		if l.ret.Type != TypeNone || l.err != nil {
+			// check result and error
+			return l.ret, l.err
+		}
 	}
 }
