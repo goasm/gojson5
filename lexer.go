@@ -100,21 +100,26 @@ func (l *Lexer) readString() {
 
 func (l *Lexer) readBool() {
 	p0 := l.pos
-	if expectLiteral(l, "false") {
+	if p1, ok := expectLiteral(l, "false"); ok {
+		l.pos = p1
 		l.ret = Token{TypeBool, false}
-	} else if expectLiteral(l, "true") {
+	} else if p1, ok := expectLiteral(l, "true"); ok {
+		l.pos = p1
 		l.ret = Token{TypeBool, true}
 	} else {
-		l.err = badTokenError(l.str[p0:l.pos], p0)
+		l.pos = p1
+		l.err = badTokenError(l.str[p0:p1], p0)
 	}
 }
 
 func (l *Lexer) readNull() {
 	p0 := l.pos
-	if expectLiteral(l, "null") {
+	if p1, ok := expectLiteral(l, "null"); ok {
+		l.pos = p1
 		l.ret = Token{TypeNull, nil}
 	} else {
-		l.err = badTokenError(l.str[p0:l.pos], p0)
+		l.pos = p1
+		l.err = badTokenError(l.str[p0:p1], p0)
 	}
 }
 

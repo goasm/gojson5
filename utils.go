@@ -1,13 +1,17 @@
 package json5
 
-func expectLiteral(l *Lexer, exp string) bool {
+func expectLiteral(l *Lexer, exp string) (int, bool) {
 	maxLen := len(l.str)
+	p := l.pos
 	for i := 0; i < len(exp); {
-		if l.pos >= maxLen || l.str[l.pos] != exp[i] {
-			return false
+		if p >= maxLen {
+			return p, false
+		} else if l.str[p] != exp[i] {
+			p++
+			return p, false
 		}
 		i++
-		l.pos++
+		p++
 	}
-	return true
+	return p, true
 }
