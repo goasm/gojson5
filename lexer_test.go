@@ -6,8 +6,8 @@ import (
 	json5 "github.com/goasm/gojson5"
 )
 
-func expectToken(t *testing.T, token json5.Token, exp json5.TokenType) {
-	if token.Type != exp {
+func expectToken(t *testing.T, token json5.Token, expected json5.TokenType) {
+	if token.Type != expected {
 		t.Fatal("Unexpected token:", token)
 	}
 }
@@ -40,6 +40,38 @@ func TestReadBool(t *testing.T) {
 
 func TestReadNull(t *testing.T) {
 	lexer := json5.NewLexer(` null `)
+	t0, err := lexer.Token()
+	noError(t, err)
+	expectToken(t, t0, json5.TypeNull)
+	equals(t, nil, t0.Value)
+	t1, err := lexer.Token()
+	noError(t, err)
+	expectToken(t, t1, json5.TypeEOF)
+}
+
+func TestReadSingleLineComment(t *testing.T) {
+	lexer := json5.NewLexer(`
+	// This is a comment
+	null
+	`)
+	t0, err := lexer.Token()
+	noError(t, err)
+	expectToken(t, t0, json5.TypeNull)
+	equals(t, nil, t0.Value)
+	t1, err := lexer.Token()
+	noError(t, err)
+	expectToken(t, t1, json5.TypeEOF)
+}
+
+func TestReadMultipleLineComment(t *testing.T) {
+	lexer := json5.NewLexer(`
+	/* =================
+	 * This is a comment
+	 * Ignore me
+	 * =================
+	 */
+	null
+	`)
 	t0, err := lexer.Token()
 	noError(t, err)
 	expectToken(t, t0, json5.TypeNull)
