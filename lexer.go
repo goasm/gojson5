@@ -17,6 +17,8 @@ const (
 const (
 	stateDefault lexerState = iota
 	stateComment
+	stateSingleLineComment
+	stateMultipleLineComment
 	stateValue
 	stateArray
 	stateObject
@@ -58,6 +60,32 @@ func (l *Lexer) readDefault() {
 	default:
 		l.state = stateValue
 	}
+}
+
+func (l *Lexer) readComment() {
+	c := l.str[l.pos]
+	switch c {
+	case '/':
+		l.state = stateSingleLineComment
+		l.pos++
+	case '*':
+		l.state = stateMultipleLineComment
+		l.pos++
+	default:
+		l.err = badCharError(c, l.pos)
+	}
+}
+
+func (l *Lexer) readSingleLineComment() {
+	c := l.str[l.pos]
+	switch c {
+	case '\n', '\r':
+		l.state = stateDefault
+		l.pos++
+	}
+}
+
+func (l *Lexer) readMultipleLineComment() {
 }
 
 func (l *Lexer) readValue() {
@@ -148,7 +176,11 @@ func (l *Lexer) Token() (Token, error) {
 		case stateDefault:
 			l.readDefault()
 		case stateComment:
-			// TODO: read comment
+			l.readComment()
+		case stateSingleLineComment:
+			l.readSingleLineComment()
+		case stateMultipleLineComment:
+			l.readMultipleLineComment()
 		case stateValue:
 			l.readValue()
 		case stateArray:
