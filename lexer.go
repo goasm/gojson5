@@ -171,6 +171,45 @@ func (l *Lexer) readNumber() {
 	}
 }
 
+func (l *Lexer) readNumberSign() {
+	c := l.str[l.pos]
+	switch c {
+	case '0':
+		l.state = stateDigitZero
+		l.buf = append(l.buf, c)
+		l.pos++
+	case '1', '2', '3', '4', '5', '6', '7', '8', '9':
+		l.state = stateDecimalInteger
+		l.buf = append(l.buf, c)
+		l.pos++
+	default:
+		l.err = badCharError(c, l.pos)
+	}
+}
+
+func (l *Lexer) readDigitZero() {
+	c := l.str[l.pos]
+	switch c {
+	case '.':
+		// TODO: float point
+	default:
+		// TODO: ???
+	}
+}
+
+func (l *Lexer) readDecimalInteger() {
+	c := l.str[l.pos]
+	switch c {
+	case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
+		l.buf = append(l.buf, c)
+		l.pos++
+	case '.':
+		// TODO: float point
+	default:
+		l.err = badCharError(c, l.pos)
+	}
+}
+
 func (l *Lexer) readBool() {
 	p0 := l.pos
 	c := l.str[l.pos]
@@ -259,11 +298,11 @@ func (l *Lexer) Token() (Token, error) {
 		case stateNumber:
 			l.readNumber()
 		case stateNumberSign:
-			// TODO: read number sign
+			l.readNumberSign()
 		case stateDigitZero:
-			// TODO: read digit zero
+			l.readDigitZero()
 		case stateDecimalInteger:
-			// TODO: read decimal integer
+			l.readDecimalInteger()
 		case stateBool:
 			l.readBool()
 		case stateNull:
