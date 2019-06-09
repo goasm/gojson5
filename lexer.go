@@ -100,27 +100,29 @@ func (l *Lexer) readString() {
 
 func (l *Lexer) readBool() {
 	p0 := l.pos
-	if p1, ok := expectLiteral(l, "false"); ok {
-		l.pos = p1
-		l.ret = Token{TypeBool, false}
-	} else if p1, ok := expectLiteral(l, "true"); ok {
-		l.pos = p1
-		l.ret = Token{TypeBool, true}
-	} else {
-		l.pos = p1
-		l.err = badTokenError(l.str[p0:p1], p0)
+	c := l.str[l.pos]
+	switch c {
+	case 'f':
+		if expectLiteral(l, "false") {
+			l.ret = Token{TypeBool, false}
+			return
+		}
+	case 't':
+		if expectLiteral(l, "true") {
+			l.ret = Token{TypeBool, true}
+			return
+		}
 	}
+	l.err = badTokenError(l.str[p0:l.pos], p0)
 }
 
 func (l *Lexer) readNull() {
 	p0 := l.pos
-	if p1, ok := expectLiteral(l, "null"); ok {
-		l.pos = p1
+	if expectLiteral(l, "null") {
 		l.ret = Token{TypeNull, nil}
-	} else {
-		l.pos = p1
-		l.err = badTokenError(l.str[p0:p1], p0)
+		return
 	}
+	l.err = badTokenError(l.str[p0:l.pos], p0)
 }
 
 // Reset resets the internals for next token
