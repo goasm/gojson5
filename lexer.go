@@ -176,10 +176,12 @@ func (l *Lexer) readNull() {
 }
 
 func (l *Lexer) checkEndState() error {
-	if l.state != stateDefault {
+	switch l.state {
+	case stateMultipleLineComment, stateMultipleLineCommentEndAsterisk:
 		return badEOF(l.pos)
+	default:
+		return nil
 	}
-	return nil
 }
 
 // Reset resets the internals for next token

@@ -49,6 +49,31 @@ func TestReadNull(t *testing.T) {
 	expectToken(t, t1, json5.TypeEOF)
 }
 
+func TestReadInWhitespaces(t *testing.T) {
+	samples := [][]string{
+		{`"foo"`, ` "foo"`, `"foo" `},
+		{`true`, ` true`, `true `},
+		{`null`, ` null`, `null `},
+	}
+	expectedTypes := []json5.TokenType{
+		json5.TypeString,
+		json5.TypeBool,
+		json5.TypeNull,
+	}
+	for idx, line := range samples {
+		expectedType := expectedTypes[idx]
+		for _, sample := range line {
+			lexer := json5.NewLexer(sample)
+			t0, err := lexer.Token()
+			noError(t, err)
+			expectToken(t, t0, expectedType)
+			t1, err := lexer.Token()
+			noError(t, err)
+			expectToken(t, t1, json5.TypeEOF)
+		}
+	}
+}
+
 func TestReadSingleLineComment(t *testing.T) {
 	lexer := json5.NewLexer(`
 	// This is a comment
