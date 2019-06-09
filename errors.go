@@ -23,3 +23,7 @@ func badCharError(ch byte, index int) *SyntaxError {
 func badTokenError(token string, index int) *SyntaxError {
 	return newSyntaxError(fmt.Sprintf("unexpected token: %s", token), index)
 }
+
+func badEOF(index int) *SyntaxError {
+	return newSyntaxError("unexpected end of JSON", index)
+}

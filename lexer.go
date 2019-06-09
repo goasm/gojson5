@@ -175,6 +175,13 @@ func (l *Lexer) readNull() {
 	l.err = badTokenError(l.str[p0:l.pos], p0)
 }
 
+func (l *Lexer) checkEndState() error {
+	if l.state != stateDefault {
+		return badEOF(l.pos)
+	}
+	return nil
+}
+
 // Reset resets the internals for next token
 func (l *Lexer) Reset() {
 	l.state = stateDefault
@@ -188,7 +195,13 @@ func (l *Lexer) Token() (Token, error) {
 	for {
 		if l.pos >= len(l.str) {
 			// check EOF
-			l.ret = Token{TypeEOF, nil}
+			if err := l.checkEndState(); err != nil {
+				// check state
+				l.err = err
+			} else {
+				// exit normally
+				l.ret = Token{TypeEOF, nil}
+			}
 		}
 		if l.ret.Type != TypeNone || l.err != nil {
 			// check result and error
