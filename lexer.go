@@ -54,8 +54,7 @@ func NewLexer(str string) *Lexer {
 	return &Lexer{str: str}
 }
 
-func (l *Lexer) readDefault() {
-	c := l.str[l.pos]
+func (l *Lexer) readDefault(c byte) {
 	switch c {
 	case ' ', '\t', '\n', '\r':
 		l.pos++
@@ -67,8 +66,7 @@ func (l *Lexer) readDefault() {
 	}
 }
 
-func (l *Lexer) readComment() {
-	c := l.str[l.pos]
+func (l *Lexer) readComment(c byte) {
 	switch c {
 	case '/':
 		l.state = stateSingleLineComment
@@ -81,8 +79,7 @@ func (l *Lexer) readComment() {
 	}
 }
 
-func (l *Lexer) readSingleLineComment() {
-	c := l.str[l.pos]
+func (l *Lexer) readSingleLineComment(c byte) {
 	switch c {
 	case '\n', '\r':
 		l.state = stateDefault
@@ -92,8 +89,7 @@ func (l *Lexer) readSingleLineComment() {
 	}
 }
 
-func (l *Lexer) readMultipleLineComment() {
-	c := l.str[l.pos]
+func (l *Lexer) readMultipleLineComment(c byte) {
 	switch c {
 	case '*':
 		l.state = stateMultipleLineCommentEndAsterisk
@@ -103,8 +99,7 @@ func (l *Lexer) readMultipleLineComment() {
 	}
 }
 
-func (l *Lexer) readMultipleLineCommentEndAsterisk() {
-	c := l.str[l.pos]
+func (l *Lexer) readMultipleLineCommentEndAsterisk(c byte) {
 	switch c {
 	case '/':
 		l.state = stateDefault
@@ -114,8 +109,7 @@ func (l *Lexer) readMultipleLineCommentEndAsterisk() {
 	}
 }
 
-func (l *Lexer) readValue() {
-	c := l.str[l.pos]
+func (l *Lexer) readValue(c byte) {
 	switch c {
 	case '[':
 		l.state = stateArray
@@ -141,8 +135,7 @@ func (l *Lexer) readValue() {
 // processing string {
 // ================================================================
 
-func (l *Lexer) readString() {
-	c := l.str[l.pos]
+func (l *Lexer) readString(c byte) {
 	switch c {
 	case '\\':
 		l.state = stateEscapeChar
@@ -165,8 +158,7 @@ func (l *Lexer) readString() {
 // processing number {
 // ================================================================
 
-func (l *Lexer) readNumber() {
-	c := l.str[l.pos]
+func (l *Lexer) readNumber(c byte) {
 	switch c {
 	case '-':
 		l.state = stateSignedNumber
@@ -185,8 +177,7 @@ func (l *Lexer) readNumber() {
 	}
 }
 
-func (l *Lexer) readSignedNumber() {
-	c := l.str[l.pos]
+func (l *Lexer) readSignedNumber(c byte) {
 	switch c {
 	case '0':
 		l.state = stateDigitZero
@@ -201,8 +192,7 @@ func (l *Lexer) readSignedNumber() {
 	}
 }
 
-func (l *Lexer) readDigitZero() {
-	c := l.str[l.pos]
+func (l *Lexer) readDigitZero(c byte) {
 	switch c {
 	case '.':
 		// TODO: float point
@@ -211,8 +201,7 @@ func (l *Lexer) readDigitZero() {
 	}
 }
 
-func (l *Lexer) readDecimalInteger() {
-	c := l.str[l.pos]
+func (l *Lexer) readDecimalInteger(c byte) {
 	switch c {
 	case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
 		l.buf = append(l.buf, c)
@@ -229,9 +218,8 @@ func (l *Lexer) readDecimalInteger() {
 // }
 // ================================================================
 
-func (l *Lexer) readBool() {
+func (l *Lexer) readBool(c byte) {
 	p0 := l.pos
-	c := l.str[l.pos]
 	switch c {
 	case 'f':
 		if expectLiteral(l, "false") {
@@ -247,7 +235,7 @@ func (l *Lexer) readBool() {
 	l.err = badTokenError(l.str[p0:l.pos], p0)
 }
 
-func (l *Lexer) readNull() {
+func (l *Lexer) readNull(c byte) {
 	p0 := l.pos
 	if expectLiteral(l, "null") {
 		l.ret = Token{TypeNull, nil}
@@ -293,39 +281,40 @@ func (l *Lexer) Token() (Token, error) {
 		if l.ret.Type != TypeNone || l.err != nil {
 			return l.ret, l.err
 		}
+		c := l.str[l.pos]
 		switch l.state {
 		case stateDefault:
-			l.readDefault()
+			l.readDefault(c)
 		case stateComment:
-			l.readComment()
+			l.readComment(c)
 		case stateSingleLineComment:
-			l.readSingleLineComment()
+			l.readSingleLineComment(c)
 		case stateMultipleLineComment:
-			l.readMultipleLineComment()
+			l.readMultipleLineComment(c)
 		case stateMultipleLineCommentEndAsterisk:
-			l.readMultipleLineCommentEndAsterisk()
+			l.readMultipleLineCommentEndAsterisk(c)
 		case stateValue:
-			l.readValue()
+			l.readValue(c)
 		case stateArray:
 			// TODO: read array
 		case stateObject:
 			// TODO: read object
 		case stateString:
-			l.readString()
+			l.readString(c)
 		case stateEscapeChar:
 			// TODO: read escape char
 		case stateNumber:
-			l.readNumber()
+			l.readNumber(c)
 		case stateSignedNumber:
-			l.readSignedNumber()
+			l.readSignedNumber(c)
 		case stateDigitZero:
-			l.readDigitZero()
+			l.readDigitZero(c)
 		case stateDecimalInteger:
-			l.readDecimalInteger()
+			l.readDecimalInteger(c)
 		case stateBool:
-			l.readBool()
+			l.readBool(c)
 		case stateNull:
-			l.readNull()
+			l.readNull(c)
 		}
 		// check result and error
 		if l.ret.Type != TypeNone || l.err != nil {
