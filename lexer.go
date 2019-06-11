@@ -267,21 +267,12 @@ func (l *Lexer) Reset() {
 func (l *Lexer) Token() (Token, error) {
 	l.Reset()
 	for {
-		// check EOF
-		if l.pos >= len(l.str) {
-			// check state
-			if err := l.checkEndState(); err != nil {
-				l.err = err
-			} else {
-				// exit normally
-				l.ret = Token{TypeEOF, nil}
-			}
+		var c byte
+		if l.pos < len(l.str) {
+			c = l.str[l.pos]
+		} else {
+			c = ' '
 		}
-		// check result and error
-		if l.ret.Type != TypeNone || l.err != nil {
-			return l.ret, l.err
-		}
-		c := l.str[l.pos]
 		switch l.state {
 		case stateDefault:
 			l.readDefault(c)
@@ -315,6 +306,16 @@ func (l *Lexer) Token() (Token, error) {
 			l.readBool(c)
 		case stateNull:
 			l.readNull(c)
+		}
+		// check EOF
+		if l.pos > len(l.str) {
+			// check state
+			if err := l.checkEndState(); err != nil {
+				l.err = err
+			} else {
+				// exit normally
+				l.ret = Token{TypeEOF, nil}
+			}
 		}
 		// check result and error
 		if l.ret.Type != TypeNone || l.err != nil {
