@@ -74,11 +74,13 @@ func TestReadNull(t *testing.T) {
 func TestReadInWhitespaces(t *testing.T) {
 	samples := [][]string{
 		{`"foo"`, ` "foo"`, `"foo" `},
+		{`100`, ` 100`, `100 `},
 		{`true`, ` true`, `true `},
 		{`null`, ` null`, `null `},
 	}
 	expectedTypes := []json5.TokenType{
 		json5.TypeString,
+		json5.TypeNumber,
 		json5.TypeBool,
 		json5.TypeNull,
 	}
