@@ -45,8 +45,6 @@ type Lexer struct {
 	pos   int
 	state lexerState
 	buf   []byte
-	ret   Token
-	err   error
 }
 
 // NewLexer creates a JSON5 Lexer
@@ -54,7 +52,7 @@ func NewLexer(str string) *Lexer {
 	return &Lexer{str: str}
 }
 
-func (l *Lexer) readDefault(c byte) {
+func (l *Lexer) readDefault(c byte) (tk Token, err error) {
 	switch c {
 	case ' ', '\t', '\n', '\r':
 		l.pos++
@@ -64,9 +62,10 @@ func (l *Lexer) readDefault(c byte) {
 	default:
 		l.state = stateValue
 	}
+	return
 }
 
-func (l *Lexer) readComment(c byte) {
+func (l *Lexer) readComment(c byte) (tk Token, err error) {
 	switch c {
 	case '/':
 		l.state = stateSingleLineComment
@@ -75,11 +74,12 @@ func (l *Lexer) readComment(c byte) {
 		l.state = stateMultipleLineComment
 		l.pos++
 	default:
-		l.err = badCharError(c, l.pos)
+		err = badCharError(c, l.pos)
 	}
+	return
 }
 
-func (l *Lexer) readSingleLineComment(c byte) {
+func (l *Lexer) readSingleLineComment(c byte) (tk Token, err error) {
 	switch c {
 	case '\n', '\r':
 		l.state = stateDefault
@@ -87,9 +87,10 @@ func (l *Lexer) readSingleLineComment(c byte) {
 	default:
 		l.pos++
 	}
+	return
 }
 
-func (l *Lexer) readMultipleLineComment(c byte) {
+func (l *Lexer) readMultipleLineComment(c byte) (tk Token, err error) {
 	switch c {
 	case '*':
 		l.state = stateMultipleLineCommentEndAsterisk
@@ -97,9 +98,10 @@ func (l *Lexer) readMultipleLineComment(c byte) {
 	default:
 		l.pos++
 	}
+	return
 }
 
-func (l *Lexer) readMultipleLineCommentEndAsterisk(c byte) {
+func (l *Lexer) readMultipleLineCommentEndAsterisk(c byte) (tk Token, err error) {
 	switch c {
 	case '/':
 		l.state = stateDefault
@@ -107,9 +109,10 @@ func (l *Lexer) readMultipleLineCommentEndAsterisk(c byte) {
 	default:
 		l.pos++
 	}
+	return
 }
 
-func (l *Lexer) readValue(c byte) {
+func (l *Lexer) readValue(c byte) (tk Token, err error) {
 	switch c {
 	case '[':
 		l.state = stateArray
@@ -127,27 +130,29 @@ func (l *Lexer) readValue(c byte) {
 	case 'n':
 		l.state = stateNull
 	default:
-		l.err = badCharError(c, l.pos)
+		err = badCharError(c, l.pos)
 	}
+	return
 }
 
 // ================================================================
 // processing string {
 // ================================================================
 
-func (l *Lexer) readString(c byte) {
+func (l *Lexer) readString(c byte) (tk Token, err error) {
 	switch c {
 	case '\\':
 		l.state = stateEscapeChar
 		l.pos++
 	case '"':
 		value := string(l.buf)
-		l.ret = Token{TypeString, value}
+		tk = Token{TypeString, value}
 		l.pos++
 	default:
 		l.buf = append(l.buf, c)
 		l.pos++
 	}
+	return
 }
 
 // ================================================================
@@ -158,7 +163,7 @@ func (l *Lexer) readString(c byte) {
 // processing number {
 // ================================================================
 
-func (l *Lexer) readNumber(c byte) {
+func (l *Lexer) readNumber(c byte) (tk Token, err error) {
 	switch c {
 	case '-':
 		l.state = stateSignedNumber
@@ -173,11 +178,12 @@ func (l *Lexer) readNumber(c byte) {
 		l.buf = append(l.buf, c)
 		l.pos++
 	default:
-		l.err = badCharError(c, l.pos)
+		err = badCharError(c, l.pos)
 	}
+	return
 }
 
-func (l *Lexer) readSignedNumber(c byte) {
+func (l *Lexer) readSignedNumber(c byte) (tk Token, err error) {
 	switch c {
 	case '0':
 		l.state = stateDigitZero
@@ -188,20 +194,22 @@ func (l *Lexer) readSignedNumber(c byte) {
 		l.buf = append(l.buf, c)
 		l.pos++
 	default:
-		l.err = badCharError(c, l.pos)
+		err = badCharError(c, l.pos)
 	}
+	return
 }
 
-func (l *Lexer) readDigitZero(c byte) {
+func (l *Lexer) readDigitZero(c byte) (tk Token, err error) {
 	switch c {
 	case '.':
 		// TODO: float point
 	default:
 		// TODO: ???
 	}
+	return
 }
 
-func (l *Lexer) readDecimalInteger(c byte) {
+func (l *Lexer) readDecimalInteger(c byte) (tk Token, err error) {
 	switch c {
 	case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
 		l.buf = append(l.buf, c)
@@ -210,38 +218,41 @@ func (l *Lexer) readDecimalInteger(c byte) {
 		// TODO: float point
 	default:
 		value := parseDecimalInteger(string(l.buf))
-		l.ret = Token{TypeNumber, value}
+		tk = Token{TypeNumber, value}
 	}
+	return
 }
 
 // ================================================================
 // }
 // ================================================================
 
-func (l *Lexer) readBool(c byte) {
+func (l *Lexer) readBool(c byte) (tk Token, err error) {
 	p0 := l.pos
 	switch c {
 	case 'f':
 		if expectLiteral(l, "false") {
-			l.ret = Token{TypeBool, false}
+			tk = Token{TypeBool, false}
 			return
 		}
 	case 't':
 		if expectLiteral(l, "true") {
-			l.ret = Token{TypeBool, true}
+			tk = Token{TypeBool, true}
 			return
 		}
 	}
-	l.err = badTokenError(l.str[p0:l.pos], p0)
+	err = badTokenError(l.str[p0:l.pos], p0)
+	return
 }
 
-func (l *Lexer) readNull(c byte) {
+func (l *Lexer) readNull(c byte) (tk Token, err error) {
 	p0 := l.pos
 	if expectLiteral(l, "null") {
-		l.ret = Token{TypeNull, nil}
+		tk = Token{TypeNull, nil}
 		return
 	}
-	l.err = badTokenError(l.str[p0:l.pos], p0)
+	err = badTokenError(l.str[p0:l.pos], p0)
+	return
 }
 
 // TODO: new state handler
@@ -260,11 +271,10 @@ func (l *Lexer) checkEndState() error {
 func (l *Lexer) Reset() {
 	l.state = stateDefault
 	l.buf = []byte{}
-	l.ret = Token{TypeNone, nil}
 }
 
 // Token gets the next JSON token
-func (l *Lexer) Token() (Token, error) {
+func (l *Lexer) Token() (tk Token, err error) {
 	l.Reset()
 	for {
 		var c byte
@@ -275,51 +285,51 @@ func (l *Lexer) Token() (Token, error) {
 		}
 		switch l.state {
 		case stateDefault:
-			l.readDefault(c)
+			tk, err = l.readDefault(c)
 		case stateComment:
-			l.readComment(c)
+			tk, err = l.readComment(c)
 		case stateSingleLineComment:
-			l.readSingleLineComment(c)
+			tk, err = l.readSingleLineComment(c)
 		case stateMultipleLineComment:
-			l.readMultipleLineComment(c)
+			tk, err = l.readMultipleLineComment(c)
 		case stateMultipleLineCommentEndAsterisk:
-			l.readMultipleLineCommentEndAsterisk(c)
+			tk, err = l.readMultipleLineCommentEndAsterisk(c)
 		case stateValue:
-			l.readValue(c)
+			tk, err = l.readValue(c)
 		case stateArray:
 			// TODO: read array
 		case stateObject:
 			// TODO: read object
 		case stateString:
-			l.readString(c)
+			tk, err = l.readString(c)
 		case stateEscapeChar:
 			// TODO: read escape char
 		case stateNumber:
-			l.readNumber(c)
+			tk, err = l.readNumber(c)
 		case stateSignedNumber:
-			l.readSignedNumber(c)
+			tk, err = l.readSignedNumber(c)
 		case stateDigitZero:
-			l.readDigitZero(c)
+			tk, err = l.readDigitZero(c)
 		case stateDecimalInteger:
-			l.readDecimalInteger(c)
+			tk, err = l.readDecimalInteger(c)
 		case stateBool:
-			l.readBool(c)
+			tk, err = l.readBool(c)
 		case stateNull:
-			l.readNull(c)
+			tk, err = l.readNull(c)
 		}
 		// check EOF
 		if l.pos > len(l.str) {
 			// check state
-			if err := l.checkEndState(); err != nil {
-				l.err = err
+			if e := l.checkEndState(); e != nil {
+				err = e
 			} else {
 				// exit normally
-				l.ret = Token{TypeEOF, nil}
+				tk = Token{TypeEOF, nil}
 			}
 		}
 		// check result and error
-		if l.ret.Type != TypeNone || l.err != nil {
-			return l.ret, l.err
+		if tk.Type != TypeNone || err != nil {
+			return
 		}
 	}
 }
