@@ -31,6 +31,8 @@ const (
 	stateDecimalInteger
 	statePoint
 	stateDecimalFraction
+	stateDecimalExponent
+	stateUnsignedDecimalExponent
 	stateLiteral
 )
 
@@ -237,6 +239,35 @@ func (l *Lexer) readDecimalFraction(c byte) (tk Token, err error) {
 	case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
 		l.buf = append(l.buf, c)
 		l.pos++
+	case 'e', 'E':
+		l.state = stateDecimalExponent
+		l.buf = append(l.buf, c)
+		l.pos++
+	default:
+		var value float64
+		value, err = parseFloat(string(l.buf))
+		tk = Token{TypeNumber, value}
+	}
+	return
+}
+
+func (l *Lexer) readDecimalExponent(c byte) (tk Token, err error) {
+	switch c {
+	case '+', '-':
+		l.state = stateUnsignedDecimalExponent
+		l.buf = append(l.buf, c)
+		l.pos++
+	default:
+		tk, err = l.readUnsignedDecimalExponent(c)
+	}
+	return
+}
+
+func (l *Lexer) readUnsignedDecimalExponent(c byte) (tk Token, err error) {
+	switch c {
+	case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
+		l.buf = append(l.buf, c)
+		l.pos++
 	default:
 		var value float64
 		value, err = parseFloat(string(l.buf))
@@ -333,6 +364,10 @@ func (l *Lexer) Token() (tk Token, err error) {
 			tk, err = l.readPoint(c)
 		case stateDecimalFraction:
 			tk, err = l.readDecimalFraction(c)
+		case stateDecimalExponent:
+			tk, err = l.readDecimalExponent(c)
+		case stateUnsignedDecimalExponent:
+			tk, err = l.readUnsignedDecimalExponent(c)
 		case stateLiteral:
 			tk, err = l.readLiteral(c)
 		}
