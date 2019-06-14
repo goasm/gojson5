@@ -29,8 +29,7 @@ const (
 	stateSignedNumber
 	stateDigitZero
 	stateDecimalInteger
-	stateBool
-	stateNull
+	stateLiteral
 )
 
 // Token represents an unit for syntax analysis
@@ -125,10 +124,8 @@ func (l *Lexer) readValue(c byte) (tk Token, err error) {
 		l.pos++
 	case '-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
 		l.state = stateNumber
-	case 'f', 't':
-		l.state = stateBool
-	case 'n':
-		l.state = stateNull
+	case 'f', 't', 'n':
+		l.state = stateLiteral
 	default:
 		err = badCharError(c, l.pos)
 	}
@@ -227,7 +224,7 @@ func (l *Lexer) readDecimalInteger(c byte) (tk Token, err error) {
 // }
 // ================================================================
 
-func (l *Lexer) readBool(c byte) (tk Token, err error) {
+func (l *Lexer) readLiteral(c byte) (tk Token, err error) {
 	p0 := l.pos
 	switch c {
 	case 'f':
@@ -240,16 +237,11 @@ func (l *Lexer) readBool(c byte) (tk Token, err error) {
 			tk = Token{TypeBool, true}
 			return
 		}
-	}
-	err = badTokenError(l.str[p0:l.pos], p0)
-	return
-}
-
-func (l *Lexer) readNull(c byte) (tk Token, err error) {
-	p0 := l.pos
-	if expectLiteral(l, "null") {
-		tk = Token{TypeNull, nil}
-		return
+	case 'n':
+		if expectLiteral(l, "null") {
+			tk = Token{TypeNull, nil}
+			return
+		}
 	}
 	err = badTokenError(l.str[p0:l.pos], p0)
 	return
@@ -312,10 +304,8 @@ func (l *Lexer) Token() (tk Token, err error) {
 			tk, err = l.readDigitZero(c)
 		case stateDecimalInteger:
 			tk, err = l.readDecimalInteger(c)
-		case stateBool:
-			tk, err = l.readBool(c)
-		case stateNull:
-			tk, err = l.readNull(c)
+		case stateLiteral:
+			tk, err = l.readLiteral(c)
 		}
 		// check EOF
 		if l.pos > len(l.str) {
