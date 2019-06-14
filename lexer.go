@@ -168,16 +168,8 @@ func (l *Lexer) readNumber(c byte) (tk Token, err error) {
 		l.state = stateSignedNumber
 		l.buf = append(l.buf, c)
 		l.pos++
-	case '0':
-		l.state = stateDigitZero
-		l.buf = append(l.buf, c)
-		l.pos++
-	case '1', '2', '3', '4', '5', '6', '7', '8', '9':
-		l.state = stateDecimalInteger
-		l.buf = append(l.buf, c)
-		l.pos++
 	default:
-		err = badCharError(c, l.pos)
+		tk, err = l.readSignedNumber(c)
 	}
 	return
 }
