@@ -214,7 +214,8 @@ func (l *Lexer) readDecimalInteger(c byte) (tk Token, err error) {
 	case '.':
 		// TODO: float point
 	default:
-		value := parseDecimalInteger(string(l.buf))
+		var value int
+		value, err = parseInteger(string(l.buf))
 		tk = Token{TypeNumber, value}
 	}
 	return

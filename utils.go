@@ -15,10 +15,7 @@ func expectLiteral(l *Lexer, expected string) bool {
 	return i == len(expected)
 }
 
-func parseDecimalInteger(s string) int {
+func parseInteger(s string) (int, error) {
 	value, err := strconv.ParseInt(s, 10, 64)
-	if err != nil {
-		panic(err)
-	}
-	return int(value)
+	return int(value), err
 }
