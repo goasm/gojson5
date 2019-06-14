@@ -26,8 +26,8 @@ const (
 	stateString
 	stateEscapeChar
 	stateNumber
-	stateSignedNumber
-	stateDigitZero
+	stateUnsignedNumber
+	stateZero
 	stateDecimalInteger
 	statePoint
 	stateDecimalFraction
@@ -165,19 +165,19 @@ func (l *Lexer) readString(c byte) (tk Token, err error) {
 func (l *Lexer) readNumber(c byte) (tk Token, err error) {
 	switch c {
 	case '-':
-		l.state = stateSignedNumber
+		l.state = stateUnsignedNumber
 		l.buf = append(l.buf, c)
 		l.pos++
 	default:
-		tk, err = l.readSignedNumber(c)
+		tk, err = l.readUnsignedNumber(c)
 	}
 	return
 }
 
-func (l *Lexer) readSignedNumber(c byte) (tk Token, err error) {
+func (l *Lexer) readUnsignedNumber(c byte) (tk Token, err error) {
 	switch c {
 	case '0':
-		l.state = stateDigitZero
+		l.state = stateZero
 		l.buf = append(l.buf, c)
 		l.pos++
 	case '1', '2', '3', '4', '5', '6', '7', '8', '9':
@@ -190,7 +190,7 @@ func (l *Lexer) readSignedNumber(c byte) (tk Token, err error) {
 	return
 }
 
-func (l *Lexer) readDigitZero(c byte) (tk Token, err error) {
+func (l *Lexer) readZero(c byte) (tk Token, err error) {
 	switch c {
 	case '.':
 		l.state = statePoint
@@ -323,10 +323,10 @@ func (l *Lexer) Token() (tk Token, err error) {
 			// TODO: read escape char
 		case stateNumber:
 			tk, err = l.readNumber(c)
-		case stateSignedNumber:
-			tk, err = l.readSignedNumber(c)
-		case stateDigitZero:
-			tk, err = l.readDigitZero(c)
+		case stateUnsignedNumber:
+			tk, err = l.readUnsignedNumber(c)
+		case stateZero:
+			tk, err = l.readZero(c)
 		case stateDecimalInteger:
 			tk, err = l.readDecimalInteger(c)
 		case statePoint:
