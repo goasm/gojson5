@@ -15,9 +15,8 @@ func expectLiteral(l *Lexer, expected string) bool {
 	return i == len(expected)
 }
 
-func parseInteger(s string) (int, error) {
-	value, err := strconv.ParseInt(s, 10, 64)
-	return int(value), err
+func parseInteger(s string) (int64, error) {
+	return strconv.ParseInt(s, 10, 64)
 }
 
 func parseFloat(s string) (float64, error) {

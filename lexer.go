@@ -215,7 +215,7 @@ func (l *Lexer) readDecimalInteger(c byte) (tk Token, err error) {
 		l.buf = append(l.buf, c)
 		l.pos++
 	default:
-		var value int
+		var value int64
 		value, err = parseInteger(string(l.buf))
 		tk = Token{TypeNumber, value}
 	}
