@@ -56,6 +56,17 @@ func TestReadFloatNumber(t *testing.T) {
 	expectToken(t, t1, json5.TypeEOF)
 }
 
+func TestReadExponentNumber(t *testing.T) {
+	lexer := json5.NewLexer(` 3.14e8 `)
+	t0, err := lexer.Token()
+	noError(t, err)
+	expectToken(t, t0, json5.TypeNumber)
+	equals(t, 314000000.0, t0.Value)
+	t1, err := lexer.Token()
+	noError(t, err)
+	expectToken(t, t1, json5.TypeEOF)
+}
+
 func TestReadBool(t *testing.T) {
 	lexer := json5.NewLexer(` true false `)
 	t0, err := lexer.Token()
