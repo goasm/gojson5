@@ -29,6 +29,8 @@ const (
 	stateSignedNumber
 	stateDigitZero
 	stateDecimalInteger
+	statePoint
+	stateDecimalFraction
 	stateLiteral
 )
 
@@ -199,9 +201,12 @@ func (l *Lexer) readSignedNumber(c byte) (tk Token, err error) {
 func (l *Lexer) readDigitZero(c byte) (tk Token, err error) {
 	switch c {
 	case '.':
-		// TODO: float point
+		l.state = statePoint
+		l.buf = append(l.buf, c)
+		l.pos++
 	default:
-		// TODO: ???
+		// TODO: support hexadecimal number
+		err = badCharError(c, l.pos)
 	}
 	return
 }
@@ -212,10 +217,37 @@ func (l *Lexer) readDecimalInteger(c byte) (tk Token, err error) {
 		l.buf = append(l.buf, c)
 		l.pos++
 	case '.':
-		// TODO: float point
+		l.state = statePoint
+		l.buf = append(l.buf, c)
+		l.pos++
 	default:
 		var value int
 		value, err = parseInteger(string(l.buf))
+		tk = Token{TypeNumber, value}
+	}
+	return
+}
+
+func (l *Lexer) readPoint(c byte) (tk Token, err error) {
+	switch c {
+	case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
+		l.state = stateDecimalFraction
+		l.buf = append(l.buf, c)
+		l.pos++
+	default:
+		err = badCharError(c, l.pos)
+	}
+	return
+}
+
+func (l *Lexer) readDecimalFraction(c byte) (tk Token, err error) {
+	switch c {
+	case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
+		l.buf = append(l.buf, c)
+		l.pos++
+	default:
+		var value float64
+		value, err = parseFloat(string(l.buf))
 		tk = Token{TypeNumber, value}
 	}
 	return
@@ -305,6 +337,10 @@ func (l *Lexer) Token() (tk Token, err error) {
 			tk, err = l.readDigitZero(c)
 		case stateDecimalInteger:
 			tk, err = l.readDecimalInteger(c)
+		case statePoint:
+			tk, err = l.readPoint(c)
+		case stateDecimalFraction:
+			tk, err = l.readDecimalFraction(c)
 		case stateLiteral:
 			tk, err = l.readLiteral(c)
 		}
