@@ -7,6 +7,7 @@ import (
 )
 
 func expectToken(t *testing.T, token json5.Token, expected json5.TokenType) {
+	t.Helper()
 	if token.Type != expected {
 		t.Fatal("Unexpected token:", token)
 	}
