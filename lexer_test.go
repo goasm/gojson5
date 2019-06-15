@@ -67,6 +67,13 @@ func TestReadExponentNumber(t *testing.T) {
 	expectToken(t, t1, json5.TypeEOF)
 }
 
+func TestReadInvalidNumber(t *testing.T) {
+	lexer := json5.NewLexer(` 3.e8 `)
+	t0, err := lexer.Token()
+	hasError(t, err, "unexpected character")
+	expectToken(t, t0, json5.TypeNone)
+}
+
 func TestReadBool(t *testing.T) {
 	lexer := json5.NewLexer(` true false `)
 	t0, err := lexer.Token()
