@@ -128,6 +128,13 @@ func TestReadInWhitespaces(t *testing.T) {
 	}
 }
 
+func TestReadInvalidLiteral(t *testing.T) {
+	lexer := json5.NewLexer(` falsy `)
+	t0, err := lexer.Token()
+	hasError(t, err, "unexpected token")
+	expectToken(t, t0, json5.TypeNone)
+}
+
 func TestReadSingleLineComment(t *testing.T) {
 	lexer := json5.NewLexer(`
 	// This is a comment
