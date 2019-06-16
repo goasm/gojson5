@@ -68,6 +68,23 @@ func TestReadExponentNumber(t *testing.T) {
 	expectToken(t, t1, json5.TypeEOF)
 }
 
+func TestReadValidNumbers(t *testing.T) {
+	samples := []string{
+		"0", "1", "12", "1204",
+		"0.2", "1.2", "12.4", "12.04",
+		"0e2", "1e2", "12.4e4", "12.04e4",
+	}
+	for _, sample := range samples {
+		lexer := json5.NewLexer(sample)
+		t0, err := lexer.Token()
+		noError(t, err)
+		expectToken(t, t0, json5.TypeNumber)
+		t1, err := lexer.Token()
+		noError(t, err)
+		expectToken(t, t1, json5.TypeEOF)
+	}
+}
+
 func TestReadInvalidNumber(t *testing.T) {
 	lexer := json5.NewLexer(` 3.e8 `)
 	t0, err := lexer.Token()

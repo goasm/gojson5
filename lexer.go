@@ -195,9 +195,15 @@ func (l *Lexer) readZero(c byte) (tk Token, err error) {
 		l.state = statePoint
 		l.buf = append(l.buf, c)
 		l.pos++
+	case 'e', 'E':
+		l.state = stateDecimalExponent
+		l.buf = append(l.buf, c)
+		l.pos++
+	// case 'x', 'X': TODO: support hexadecimal number
 	default:
-		// TODO: support hexadecimal number
-		err = badCharError(c, l.pos)
+		var value int64
+		value, err = parseInteger(string(l.buf))
+		tk = Token{TypeNumber, value}
 	}
 	return
 }
@@ -209,6 +215,10 @@ func (l *Lexer) readDecimalInteger(c byte) (tk Token, err error) {
 		l.pos++
 	case '.':
 		l.state = statePoint
+		l.buf = append(l.buf, c)
+		l.pos++
+	case 'e', 'E':
+		l.state = stateDecimalExponent
 		l.buf = append(l.buf, c)
 		l.pos++
 	default:
