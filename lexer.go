@@ -109,6 +109,7 @@ func (l *Lexer) readMultipleLineCommentEndAsterisk(c byte) (tk Token, err error)
 		l.state = stateDefault
 		l.pos++
 	default:
+		l.state = stateMultipleLineComment
 		l.pos++
 	}
 	return
