@@ -74,11 +74,17 @@ func TestReadValidNumbers(t *testing.T) {
 		"0.2", "1.2", "12.4", "12.04",
 		"0e2", "1e2", "12.4e4", "12.04e4",
 	}
-	for _, sample := range samples {
+	expectedValues := []interface{}{
+		int64(0), int64(1), int64(12), int64(1204),
+		0.2, 1.2, 12.4, 12.04,
+		0.0, 100.0, 124000.0, 120400.0,
+	}
+	for idx, sample := range samples {
 		lexer := json5.NewLexer(sample)
 		t0, err := lexer.Token()
 		noError(t, err)
 		expectToken(t, t0, json5.TypeNumber)
+		equals(t, expectedValues[idx], t0.Value)
 		t1, err := lexer.Token()
 		noError(t, err)
 		expectToken(t, t1, json5.TypeEOF)
