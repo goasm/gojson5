@@ -1,6 +1,25 @@
 package json5
 
-import "strconv"
+import (
+	"bytes"
+	"strconv"
+)
+
+type stringBuffer struct {
+	buf bytes.Buffer
+}
+
+func (sb *stringBuffer) Append(c byte) {
+	sb.buf.WriteByte(c)
+}
+
+func (sb *stringBuffer) Reset() {
+	sb.buf.Reset()
+}
+
+func (sb *stringBuffer) String() string {
+	return sb.buf.String()
+}
 
 func expectLiteral(l *Lexer, expected string) bool {
 	maxLen := len(l.str) - l.pos

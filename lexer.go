@@ -46,7 +46,7 @@ type Lexer struct {
 	str   string
 	pos   int
 	state lexerState
-	buf   []byte
+	buf   stringBuffer
 }
 
 // NewLexer creates a JSON5 Lexer
@@ -144,11 +144,11 @@ func (l *Lexer) readString(c byte) (tk Token, err error) {
 		l.state = stateEscapeChar
 		l.pos++
 	case '"':
-		value := string(l.buf)
+		value := l.buf.String()
 		tk = Token{TypeString, value}
 		l.pos++
 	default:
-		l.buf = append(l.buf, c)
+		l.buf.Append(c)
 		l.pos++
 	}
 	return
@@ -166,7 +166,7 @@ func (l *Lexer) readNumber(c byte) (tk Token, err error) {
 	switch c {
 	case '-':
 		l.state = stateUnsignedNumber
-		l.buf = append(l.buf, c)
+		l.buf.Append(c)
 		l.pos++
 	default:
 		tk, err = l.readUnsignedNumber(c)
@@ -178,11 +178,11 @@ func (l *Lexer) readUnsignedNumber(c byte) (tk Token, err error) {
 	switch c {
 	case '0':
 		l.state = stateZero
-		l.buf = append(l.buf, c)
+		l.buf.Append(c)
 		l.pos++
 	case '1', '2', '3', '4', '5', '6', '7', '8', '9':
 		l.state = stateDecimalInteger
-		l.buf = append(l.buf, c)
+		l.buf.Append(c)
 		l.pos++
 	default:
 		err = badCharError(c, l.pos)
@@ -194,16 +194,16 @@ func (l *Lexer) readZero(c byte) (tk Token, err error) {
 	switch c {
 	case '.':
 		l.state = statePoint
-		l.buf = append(l.buf, c)
+		l.buf.Append(c)
 		l.pos++
 	case 'e', 'E':
 		l.state = stateDecimalExponent
-		l.buf = append(l.buf, c)
+		l.buf.Append(c)
 		l.pos++
 	// case 'x', 'X': TODO: support hexadecimal number
 	default:
 		var value int64
-		value, err = parseInteger(string(l.buf))
+		value, err = parseInteger(l.buf.String())
 		tk = Token{TypeNumber, value}
 	}
 	return
@@ -212,19 +212,19 @@ func (l *Lexer) readZero(c byte) (tk Token, err error) {
 func (l *Lexer) readDecimalInteger(c byte) (tk Token, err error) {
 	switch c {
 	case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
-		l.buf = append(l.buf, c)
+		l.buf.Append(c)
 		l.pos++
 	case '.':
 		l.state = statePoint
-		l.buf = append(l.buf, c)
+		l.buf.Append(c)
 		l.pos++
 	case 'e', 'E':
 		l.state = stateDecimalExponent
-		l.buf = append(l.buf, c)
+		l.buf.Append(c)
 		l.pos++
 	default:
 		var value int64
-		value, err = parseInteger(string(l.buf))
+		value, err = parseInteger(l.buf.String())
 		tk = Token{TypeNumber, value}
 	}
 	return
@@ -234,7 +234,7 @@ func (l *Lexer) readPoint(c byte) (tk Token, err error) {
 	switch c {
 	case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
 		l.state = stateDecimalFraction
-		l.buf = append(l.buf, c)
+		l.buf.Append(c)
 		l.pos++
 	default:
 		err = badCharError(c, l.pos)
@@ -245,15 +245,15 @@ func (l *Lexer) readPoint(c byte) (tk Token, err error) {
 func (l *Lexer) readDecimalFraction(c byte) (tk Token, err error) {
 	switch c {
 	case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
-		l.buf = append(l.buf, c)
+		l.buf.Append(c)
 		l.pos++
 	case 'e', 'E':
 		l.state = stateDecimalExponent
-		l.buf = append(l.buf, c)
+		l.buf.Append(c)
 		l.pos++
 	default:
 		var value float64
-		value, err = parseFloat(string(l.buf))
+		value, err = parseFloat(l.buf.String())
 		tk = Token{TypeNumber, value}
 	}
 	return
@@ -263,7 +263,7 @@ func (l *Lexer) readDecimalExponent(c byte) (tk Token, err error) {
 	switch c {
 	case '+', '-':
 		l.state = stateUnsignedDecimalExponent
-		l.buf = append(l.buf, c)
+		l.buf.Append(c)
 		l.pos++
 	default:
 		tk, err = l.readUnsignedDecimalExponent(c)
@@ -274,11 +274,11 @@ func (l *Lexer) readDecimalExponent(c byte) (tk Token, err error) {
 func (l *Lexer) readUnsignedDecimalExponent(c byte) (tk Token, err error) {
 	switch c {
 	case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
-		l.buf = append(l.buf, c)
+		l.buf.Append(c)
 		l.pos++
 	default:
 		var value float64
-		value, err = parseFloat(string(l.buf))
+		value, err = parseFloat(l.buf.String())
 		tk = Token{TypeNumber, value}
 	}
 	return
@@ -326,7 +326,7 @@ func (l *Lexer) checkEndState() error {
 // Reset resets the internals for next token
 func (l *Lexer) Reset() {
 	l.state = stateDefault
-	l.buf = []byte{}
+	l.buf.Reset()
 }
 
 // Token gets the next JSON token
