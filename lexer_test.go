@@ -24,6 +24,17 @@ func TestReadString(t *testing.T) {
 	expectToken(t, t1, json5.TypeEOF)
 }
 
+func TestReadEscapeChar(t *testing.T) {
+	lexer := json5.NewLexer(` "foo\"bar" `)
+	t0, err := lexer.Token()
+	noError(t, err)
+	expectToken(t, t0, json5.TypeString)
+	equals(t, "foo\"bar", t0.Value)
+	t1, err := lexer.Token()
+	noError(t, err)
+	expectToken(t, t1, json5.TypeEOF)
+}
+
 func TestReadIntegerNumber(t *testing.T) {
 	lexer := json5.NewLexer(` 5 `)
 	t0, err := lexer.Token()

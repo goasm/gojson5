@@ -154,6 +154,33 @@ func (l *Lexer) readString(c byte) (tk Token, err error) {
 	return
 }
 
+func (l *Lexer) readEscapeChar(c byte) (tk Token, err error) {
+	var value byte
+	switch c {
+	case '"', '\\', '/':
+		value = c
+	case 'b':
+		value = '\b'
+	case 'f':
+		value = '\f'
+	case 'n':
+		value = '\n'
+	case 'r':
+		value = '\r'
+	case 't':
+		value = '\t'
+	case 'u':
+		value = 0
+	default:
+		err = badCharError(c, l.pos)
+		return
+	}
+	l.state = stateString
+	l.buf.Append(value)
+	l.pos++
+	return
+}
+
 // ================================================================
 // }
 // ================================================================
@@ -355,7 +382,7 @@ func (l *Lexer) Token() (tk Token, err error) {
 		case stateString:
 			tk, err = l.readString(c)
 		case stateEscapeChar:
-			// TODO: read escape char
+			tk, err = l.readEscapeChar(c)
 		case stateNumber:
 			tk, err = l.readNumber(c)
 		case stateUnsignedNumber:
