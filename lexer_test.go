@@ -35,6 +35,35 @@ func TestReadEscapeChar(t *testing.T) {
 	expectToken(t, t1, json5.TypeEOF)
 }
 
+func TestReadValidEscapeChars(t *testing.T) {
+	samples := []string{
+		`"\""`, `"\\"`, `"\/"`, `"\b"`, `"\f"`, `"\n"`, `"\r"`, `"\t"`,
+	}
+	expectedValues := []string{
+		"\"", "\\", "/", "\b", "\f", "\n", "\r", "\t",
+	}
+	for idx, sample := range samples {
+		lexer := json5.NewLexer(sample)
+		t0, err := lexer.Token()
+		noError(t, err)
+		expectToken(t, t0, json5.TypeString)
+		equals(t, expectedValues[idx], t0.Value)
+		t1, err := lexer.Token()
+		noError(t, err)
+		expectToken(t, t1, json5.TypeEOF)
+	}
+}
+
+func TestReadInvalidEscapeChars(t *testing.T) {
+	samples := []string{`"\x`}
+	for _, sample := range samples {
+		lexer := json5.NewLexer(sample)
+		t0, err := lexer.Token()
+		hasError(t, err, "unexpected character")
+		expectToken(t, t0, json5.TypeNone)
+	}
+}
+
 func TestReadIntegerNumber(t *testing.T) {
 	lexer := json5.NewLexer(` 5 `)
 	t0, err := lexer.Token()
