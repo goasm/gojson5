@@ -55,7 +55,9 @@ func TestReadValidEscapeChars(t *testing.T) {
 }
 
 func TestReadInvalidEscapeChars(t *testing.T) {
-	samples := []string{`"\x`}
+	samples := []string{
+		`"\a"`, `"\e"`, `"\v"`, `"\'"`, `"\?"`, `"\x"`,
+	}
 	for _, sample := range samples {
 		lexer := json5.NewLexer(sample)
 		t0, err := lexer.Token()
