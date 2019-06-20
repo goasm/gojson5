@@ -170,7 +170,7 @@ func (l *Lexer) readEscapeChar(c byte) (tk Token, err error) {
 	case 't':
 		value = '\t'
 	case 'u':
-		value = 0
+		value = 0 // TODO: support unicode
 	default:
 		err = badCharError(c, l.pos)
 		return
