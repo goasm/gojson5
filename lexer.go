@@ -7,7 +7,12 @@ type lexerState int
 // Lexer token types
 const (
 	TypeNone TokenType = iota
-	TypePunctuator
+	TypeArrayBegin
+	TypeArrayEnd
+	TypeObjectBegin
+	TypeObjectEnd
+	TypeValueSep
+	TypePairSep
 	TypeString
 	TypeNumber
 	TypeBool
@@ -22,6 +27,7 @@ const (
 	stateMultipleLineComment
 	stateMultipleLineCommentEndAsterisk
 	stateValue
+	statePunctuator
 	stateString
 	stateEscapeChar
 	stateNumber
@@ -118,9 +124,7 @@ func (l *Lexer) readMultipleLineCommentEndAsterisk(c byte) (tk Token, err error)
 func (l *Lexer) readValue(c byte) (tk Token, err error) {
 	switch c {
 	case '[', ']', '{', '}', ',', ':':
-		tk = Token{TypePunctuator, c}
-		l.pos++
-		return
+		l.state = statePunctuator
 	case '"':
 		l.state = stateString
 		l.pos++
@@ -131,6 +135,30 @@ func (l *Lexer) readValue(c byte) (tk Token, err error) {
 	default:
 		err = badCharError(c, l.pos)
 	}
+	return
+}
+
+func (l *Lexer) readPunctuator(c byte) (tk Token, err error) {
+	var kind TokenType
+	switch c {
+	case '[':
+		kind = TypeArrayBegin
+	case ']':
+		kind = TypeArrayEnd
+	case '{':
+		kind = TypeObjectBegin
+	case '}':
+		kind = TypeObjectEnd
+	case ',':
+		kind = TypeValueSep
+	case ':':
+		kind = TypePairSep
+	default:
+		err = badCharError(c, l.pos)
+		return
+	}
+	tk = Token{kind, c}
+	l.pos++
 	return
 }
 
@@ -379,6 +407,8 @@ func (l *Lexer) Token() (tk Token, err error) {
 			tk, err = l.readMultipleLineCommentEndAsterisk(c)
 		case stateValue:
 			tk, err = l.readValue(c)
+		case statePunctuator:
+			tk, err = l.readPunctuator(c)
 		case stateString:
 			tk, err = l.readString(c)
 		case stateEscapeChar:
