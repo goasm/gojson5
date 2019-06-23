@@ -53,6 +53,7 @@ type Lexer struct {
 	pos   int
 	state lexerState
 	buf   stringBuffer
+	ps    *Parser
 }
 
 // NewLexer creates a JSON5 Lexer
