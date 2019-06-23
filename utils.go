@@ -5,6 +5,7 @@ import (
 	"strconv"
 )
 
+// stringBuffer
 type stringBuffer struct {
 	buf bytes.Buffer
 }
@@ -20,6 +21,19 @@ func (sb *stringBuffer) Reset() {
 func (sb *stringBuffer) String() string {
 	return sb.buf.String()
 }
+
+// stateStack
+type stateStack struct {
+	elements []interface{}
+}
+
+func (ss *stateStack) Push() {
+}
+
+func (ss *stateStack) Pop() {
+}
+
+// helper functions
 
 func expectLiteral(l *Lexer, expected string) bool {
 	maxLen := len(l.str) - l.pos
