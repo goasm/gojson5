@@ -2,14 +2,22 @@ package json5
 
 type parserState int
 
+const (
+	stateArrayBegin parserState = iota
+	stateArrayEnd
+	stateObjectBegin
+	stateObjectEnd
+)
+
 type Parser struct {
-	lex   *Lexer
+	state parserState
 	stack *stateStack
+	lex   *Lexer
 }
 
 func NewParser(str string) *Parser {
 	lexer := NewLexer(str)
-	parser := &Parser{lexer, &stateStack{}}
+	parser := &Parser{stack: &stateStack{}, lex: lexer}
 	lexer.ps = parser
 	return parser
 }
@@ -25,7 +33,9 @@ func (p *Parser) Parse() (value interface{}, err error) {
 		case TypeEOF:
 			return
 		case TypeArrayBegin:
+			p.state = stateArrayBegin
 		case TypeObjectBegin:
+			p.state = stateObjectBegin
 		default:
 			value = tk.Value
 		}
