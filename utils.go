@@ -27,10 +27,22 @@ type stateStack struct {
 	elements []interface{}
 }
 
-func (ss *stateStack) Push() {
+func (ss *stateStack) Size() int {
+	return len(ss.elements)
 }
 
-func (ss *stateStack) Pop() {
+func (ss *stateStack) Top() interface{} {
+	return ss.elements[len(ss.elements)-1]
+}
+
+func (ss *stateStack) Push(e interface{}) {
+	ss.elements = append(ss.elements, e)
+}
+
+func (ss *stateStack) Pop() interface{} {
+	e := ss.Top()
+	ss.elements = ss.elements[:len(ss.elements)-1]
+	return e
 }
 
 // helper functions
