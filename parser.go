@@ -39,7 +39,17 @@ func (p *Parser) parseValue(tk Token) (err error) {
 	return
 }
 
-func (p *Parser) parseArray(tk Token) {
+func (p *Parser) parseArray(tk Token) (err error) {
+	value, _ := p.stack.Top().([]interface{})
+	switch tk.Type {
+	case TypeArrayEnd:
+		p.stack.Pop()
+	case TypeString, TypeNumber, TypeBool, TypeNull:
+		value = append(value, tk.Value)
+	default:
+		err = errors.New("unexpected token")
+	}
+	return
 }
 
 func (p *Parser) parseObject(tk Token) {

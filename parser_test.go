@@ -32,3 +32,12 @@ func TestParseString(t *testing.T) {
 	noError(t, err)
 	equals(t, "foo", val)
 }
+
+func TestParseArray(t *testing.T) {
+	parser := json5.NewParser(` [1, 2, 3] `)
+	raw, err := parser.Parse()
+	noError(t, err)
+	val, ok := raw.([]interface{})
+	equals(t, true, ok)
+	equals(t, 3, len(val))
+}
