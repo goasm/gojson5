@@ -25,3 +25,10 @@ func TestParser(t *testing.T) {
 	`)
 	parser.Parse()
 }
+
+func TestParseString(t *testing.T) {
+	parser := json5.NewParser(` "foo" `)
+	val, err := parser.Parse()
+	noError(t, err)
+	equals(t, "foo", val)
+}
