@@ -6,8 +6,10 @@ type parserState int
 
 const (
 	stateStart parserState = iota
-	stateArray
+	stateBeforeArrayValue
+	stateAfterArrayValue
 	stateObject
+	stateEnd
 )
 
 type Parser struct {
@@ -23,36 +25,65 @@ func NewParser(str string) *Parser {
 	return parser
 }
 
-func (p *Parser) parseValue(tk Token) (err error) {
+func (p *Parser) parseStart(tk Token) (err error) {
+	p.stack.Push(make([]interface{}, 0))
 	switch tk.Type {
 	case TypeArrayBegin:
-		p.state = stateArray
+		p.state = stateBeforeArrayValue
 		p.stack.Push(make([]interface{}, 0))
 	case TypeObjectBegin:
 		p.state = stateObject
-		p.stack.Push(make(map[string]interface{}))
 	case TypeString, TypeNumber, TypeBool, TypeNull:
-		p.stack.Push(tk.Value)
+		p.state = stateEnd
+		arr, _ := p.stack.Top().([]interface{})
+		arr = append(arr, tk.Value)
 	default:
 		err = errors.New("unexpected token")
 	}
 	return
 }
 
-func (p *Parser) parseArray(tk Token) (err error) {
-	value, _ := p.stack.Top().([]interface{})
+func (p *Parser) parseBeforeArrayValue(tk Token) (err error) {
 	switch tk.Type {
-	case TypeArrayEnd:
-		p.stack.Pop()
+	case TypeArrayBegin:
+		p.stack.Push(make([]interface{}, 0))
+	case TypeObjectBegin:
+		p.state = stateObject
 	case TypeString, TypeNumber, TypeBool, TypeNull:
-		value = append(value, tk.Value)
+		p.state = stateAfterArrayValue
+		arr, _ := p.stack.Top().([]interface{})
+		arr = append(arr, tk.Value)
+	case TypeArrayEnd:
+		// FIXME:(restore state)
+		p.state = stateEnd
+		p.stack.Pop()
 	default:
 		err = errors.New("unexpected token")
 	}
 	return
 }
 
-func (p *Parser) parseObject(tk Token) {
+func (p *Parser) parseAfterArrayValue(tk Token) (err error) {
+	switch tk.Type {
+	case TypeValueSep:
+		p.state = stateBeforeArrayValue
+	case TypeArrayEnd:
+		// FIXME:(restore state)
+		p.state = stateEnd
+		p.stack.Pop()
+	default:
+		err = errors.New("unexpected token")
+	}
+	return
+}
+
+func (p *Parser) parseObject(tk Token) (err error) {
+	p.stack.Push(make(map[string]interface{}))
+	return
+}
+
+func (p *Parser) parseEnd(tk Token) (err error) {
+	return
 }
 
 func (p *Parser) Parse() (value interface{}, err error) {
@@ -62,17 +93,18 @@ func (p *Parser) Parse() (value interface{}, err error) {
 			err = e
 			return
 		}
-		if tk.Type == TypeEOF {
-			value = p.stack.Top()
-			return
-		}
 		switch p.state {
 		case stateStart:
-			p.parseValue(tk)
-		case stateArray:
-			p.parseArray(tk)
+			p.parseStart(tk)
+		case stateBeforeArrayValue:
+			p.parseBeforeArrayValue(tk)
+		case stateAfterArrayValue:
+			p.parseAfterArrayValue(tk)
 		case stateObject:
 			p.parseObject(tk)
+		case stateEnd:
+			p.parseEnd(tk)
+			return
 		}
 	}
 }
