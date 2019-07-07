@@ -15,6 +15,7 @@ const (
 type Parser struct {
 	state parserState
 	stack stateStack
+	value interface{}
 	lex   *Lexer
 }
 
@@ -26,7 +27,6 @@ func NewParser(str string) *Parser {
 }
 
 func (p *Parser) parseStart(tk Token) (err error) {
-	p.stack.Push(make([]interface{}, 0))
 	switch tk.Type {
 	case TypeArrayBegin:
 		p.state = stateBeforeArrayValue
@@ -35,8 +35,7 @@ func (p *Parser) parseStart(tk Token) (err error) {
 		p.state = stateObject
 	case TypeString, TypeNumber, TypeBool, TypeNull:
 		p.state = stateEnd
-		arr, _ := p.stack.Top().([]interface{})
-		arr = append(arr, tk.Value)
+		p.stack.Push(tk.Value)
 	default:
 		err = errors.New("unexpected token")
 	}
@@ -52,11 +51,11 @@ func (p *Parser) parseBeforeArrayValue(tk Token) (err error) {
 	case TypeString, TypeNumber, TypeBool, TypeNull:
 		p.state = stateAfterArrayValue
 		arr, _ := p.stack.Top().([]interface{})
-		arr = append(arr, tk.Value)
+		p.stack.elements[p.stack.Size()-1] = append(arr, tk.Value)
 	case TypeArrayEnd:
 		// FIXME:(restore state)
 		p.state = stateEnd
-		p.stack.Pop()
+		p.value = p.stack.Pop()
 	default:
 		err = errors.New("unexpected token")
 	}
@@ -70,7 +69,7 @@ func (p *Parser) parseAfterArrayValue(tk Token) (err error) {
 	case TypeArrayEnd:
 		// FIXME:(restore state)
 		p.state = stateEnd
-		p.stack.Pop()
+		p.value = p.stack.Pop()
 	default:
 		err = errors.New("unexpected token")
 	}
@@ -83,6 +82,9 @@ func (p *Parser) parseObject(tk Token) (err error) {
 }
 
 func (p *Parser) parseEnd(tk Token) (err error) {
+	if tk.Type != TypeEOF {
+		err = errors.New("unexpected token")
+	}
 	return
 }
 
@@ -104,6 +106,7 @@ func (p *Parser) Parse() (value interface{}, err error) {
 			p.parseObject(tk)
 		case stateEnd:
 			p.parseEnd(tk)
+			value = p.value
 			return
 		}
 	}

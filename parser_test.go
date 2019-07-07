@@ -40,4 +40,7 @@ func TestParseArray(t *testing.T) {
 	val, ok := raw.([]interface{})
 	equals(t, true, ok)
 	equals(t, 3, len(val))
+	equals(t, int64(1), val[0])
+	equals(t, int64(2), val[1])
+	equals(t, int64(3), val[2])
 }
