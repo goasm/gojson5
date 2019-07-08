@@ -44,3 +44,14 @@ func TestParseArray(t *testing.T) {
 	equals(t, int64(2), val[1])
 	equals(t, int64(3), val[2])
 }
+
+func TestParseObject(t *testing.T) {
+	parser := json5.NewParser(` { "foo": 1, "bar": 2, "baz": 3 } `)
+	raw, err := parser.Parse()
+	noError(t, err)
+	val, ok := raw.(map[string]interface{})
+	equals(t, true, ok)
+	equals(t, int64(1), val["foo"])
+	equals(t, int64(2), val["bar"])
+	equals(t, int64(3), val["baz"])
+}

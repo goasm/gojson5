@@ -45,6 +45,12 @@ func (ss *stateStack) Pop() interface{} {
 	return e
 }
 
+// pair
+type pair struct {
+	name  string
+	value interface{}
+}
+
 // helper functions
 
 func expectLiteral(l *Lexer, expected string) bool {
