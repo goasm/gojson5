@@ -56,7 +56,7 @@ func (p *Parser) parseBeforeArrayItem(tk Token) (err error) {
 		p.stack.Push(make(map[string]interface{}))
 	case TypeString, TypeNumber, TypeBool, TypeNull:
 		p.state = stateAfterArrayItem
-		arr, _ := p.stack.Top().([]interface{})
+		arr := p.stack.Top().([]interface{})
 		p.stack.elements[p.stack.Size()-1] = append(arr, tk.Value)
 	case TypeArrayEnd:
 		// FIXME:(restore state)
@@ -118,6 +118,8 @@ func (p *Parser) parseBeforePropertyValue(tk Token) (err error) {
 	case TypeString, TypeNumber, TypeBool, TypeNull:
 		p.state = stateAfterPropertyValue
 		p.cache.value = tk.Value
+		obj := p.stack.Top().(map[string]interface{})
+		obj[p.cache.name] = p.cache.value
 	default:
 		err = errors.New("unexpected token")
 	}
@@ -128,8 +130,6 @@ func (p *Parser) parseAfterPropertyValue(tk Token) (err error) {
 	switch tk.Type {
 	case TypeValueSep:
 		p.state = stateBeforePropertyName
-		obj, _ := p.stack.Top().(map[string]interface{})
-		obj[p.cache.name] = p.cache.value
 	case TypeObjectEnd:
 		// FIXME:(restore state)
 		p.state = stateEnd
