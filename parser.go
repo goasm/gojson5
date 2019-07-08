@@ -6,8 +6,8 @@ type parserState int
 
 const (
 	stateStart parserState = iota
-	stateBeforeArrayValue
-	stateAfterArrayValue
+	stateBeforeArrayItem
+	stateAfterArrayItem
 	stateObject
 	stateEnd
 )
@@ -29,7 +29,7 @@ func NewParser(str string) *Parser {
 func (p *Parser) parseStart(tk Token) (err error) {
 	switch tk.Type {
 	case TypeArrayBegin:
-		p.state = stateBeforeArrayValue
+		p.state = stateBeforeArrayItem
 		p.stack.Push(make([]interface{}, 0))
 	case TypeObjectBegin:
 		p.state = stateObject
@@ -42,14 +42,14 @@ func (p *Parser) parseStart(tk Token) (err error) {
 	return
 }
 
-func (p *Parser) parseBeforeArrayValue(tk Token) (err error) {
+func (p *Parser) parseBeforeArrayItem(tk Token) (err error) {
 	switch tk.Type {
 	case TypeArrayBegin:
 		p.stack.Push(make([]interface{}, 0))
 	case TypeObjectBegin:
 		p.state = stateObject
 	case TypeString, TypeNumber, TypeBool, TypeNull:
-		p.state = stateAfterArrayValue
+		p.state = stateAfterArrayItem
 		arr, _ := p.stack.Top().([]interface{})
 		p.stack.elements[p.stack.Size()-1] = append(arr, tk.Value)
 	case TypeArrayEnd:
@@ -62,10 +62,10 @@ func (p *Parser) parseBeforeArrayValue(tk Token) (err error) {
 	return
 }
 
-func (p *Parser) parseAfterArrayValue(tk Token) (err error) {
+func (p *Parser) parseAfterArrayItem(tk Token) (err error) {
 	switch tk.Type {
 	case TypeValueSep:
-		p.state = stateBeforeArrayValue
+		p.state = stateBeforeArrayItem
 	case TypeArrayEnd:
 		// FIXME:(restore state)
 		p.state = stateEnd
@@ -98,10 +98,10 @@ func (p *Parser) Parse() (value interface{}, err error) {
 		switch p.state {
 		case stateStart:
 			p.parseStart(tk)
-		case stateBeforeArrayValue:
-			p.parseBeforeArrayValue(tk)
-		case stateAfterArrayValue:
-			p.parseAfterArrayValue(tk)
+		case stateBeforeArrayItem:
+			p.parseBeforeArrayItem(tk)
+		case stateAfterArrayItem:
+			p.parseAfterArrayItem(tk)
 		case stateObject:
 			p.parseObject(tk)
 		case stateEnd:
