@@ -22,26 +22,26 @@ func (sb *stringBuffer) String() string {
 	return sb.buf.String()
 }
 
-// stateStack
-type stateStack struct {
+// stack
+type stack struct {
 	elements []interface{}
 }
 
-func (ss *stateStack) Size() int {
-	return len(ss.elements)
+func (s *stack) Size() int {
+	return len(s.elements)
 }
 
-func (ss *stateStack) Top() interface{} {
-	return ss.elements[len(ss.elements)-1]
+func (s *stack) Top() interface{} {
+	return s.elements[len(s.elements)-1]
 }
 
-func (ss *stateStack) Push(e interface{}) {
-	ss.elements = append(ss.elements, e)
+func (s *stack) Push(e interface{}) {
+	s.elements = append(s.elements, e)
 }
 
-func (ss *stateStack) Pop() interface{} {
-	e := ss.Top()
-	ss.elements = ss.elements[:len(ss.elements)-1]
+func (s *stack) Pop() interface{} {
+	e := s.Top()
+	s.elements = s.elements[:len(s.elements)-1]
 	return e
 }
 

@@ -17,7 +17,7 @@ const (
 
 type Parser struct {
 	state parserState
-	stack stateStack
+	stack stack
 	cache pair
 	value interface{}
 	lex   *Lexer
@@ -25,7 +25,7 @@ type Parser struct {
 
 func NewParser(str string) *Parser {
 	lexer := NewLexer(str)
-	parser := &Parser{stack: stateStack{}, lex: lexer}
+	parser := &Parser{lex: lexer}
 	lexer.ps = parser
 	return parser
 }
