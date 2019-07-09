@@ -32,7 +32,7 @@ func (p *Parser) parseStart(tk Token) (err error) {
 		p.stack.Push(make(map[string]interface{}))
 	case TypeString, TypeNumber, TypeBool, TypeNull:
 		p.state = stateEnd
-		p.stack.Push(tk.Value)
+		p.value = tk.Value
 	default:
 		err = errors.New("unexpected token")
 	}

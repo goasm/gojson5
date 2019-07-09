@@ -13,6 +13,27 @@ func TestParseString(t *testing.T) {
 	equals(t, "foo", val)
 }
 
+func TestParseNumber(t *testing.T) {
+	parser := json5.Parser{}
+	val, err := parser.Parse(` 100 `)
+	noError(t, err)
+	equals(t, int64(100), val)
+}
+
+func TestParseBool(t *testing.T) {
+	parser := json5.Parser{}
+	val, err := parser.Parse(` true `)
+	noError(t, err)
+	equals(t, true, val)
+}
+
+func TestParseNull(t *testing.T) {
+	parser := json5.Parser{}
+	val, err := parser.Parse(` null `)
+	noError(t, err)
+	equals(t, nil, val)
+}
+
 func TestParseArray(t *testing.T) {
 	parser := json5.Parser{}
 	raw, err := parser.Parse(` [1, 2, 3] `)
