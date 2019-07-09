@@ -20,14 +20,6 @@ type Parser struct {
 	stack stack
 	cache pair
 	value interface{}
-	lex   *Lexer
-}
-
-func NewParser(str string) *Parser {
-	lexer := NewLexer(str)
-	parser := &Parser{lex: lexer}
-	lexer.ps = parser
-	return parser
 }
 
 func (p *Parser) parseStart(tk Token) (err error) {
@@ -147,9 +139,10 @@ func (p *Parser) parseEnd(tk Token) (err error) {
 	return
 }
 
-func (p *Parser) Parse() (value interface{}, err error) {
+func (p *Parser) Parse(s string) (value interface{}, err error) {
+	lexer := NewLexer(s)
 	for {
-		tk, e := p.lex.Token()
+		tk, e := lexer.Token()
 		if e != nil {
 			err = e
 			return
