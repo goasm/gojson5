@@ -8,35 +8,35 @@ import (
 
 func TestParseString(t *testing.T) {
 	parser := json5.Parser{}
-	val, err := parser.Parse(` "foo" `)
+	val, err := parser.Parse([]byte(` "foo" `))
 	noError(t, err)
 	equals(t, "foo", val)
 }
 
 func TestParseNumber(t *testing.T) {
 	parser := json5.Parser{}
-	val, err := parser.Parse(` 100 `)
+	val, err := parser.Parse([]byte(` 100 `))
 	noError(t, err)
 	equals(t, int64(100), val)
 }
 
 func TestParseBool(t *testing.T) {
 	parser := json5.Parser{}
-	val, err := parser.Parse(` true `)
+	val, err := parser.Parse([]byte(` true `))
 	noError(t, err)
 	equals(t, true, val)
 }
 
 func TestParseNull(t *testing.T) {
 	parser := json5.Parser{}
-	val, err := parser.Parse(` null `)
+	val, err := parser.Parse([]byte(` null `))
 	noError(t, err)
 	equals(t, nil, val)
 }
 
 func TestParseArray(t *testing.T) {
 	parser := json5.Parser{}
-	raw, err := parser.Parse(` [1, 2, 3] `)
+	raw, err := parser.Parse([]byte(` [1, 2, 3] `))
 	noError(t, err)
 	val, ok := raw.([]interface{})
 	equals(t, true, ok)
@@ -48,7 +48,7 @@ func TestParseArray(t *testing.T) {
 
 func TestParseObject(t *testing.T) {
 	parser := json5.Parser{}
-	raw, err := parser.Parse(` { "foo": 1, "bar": 2, "baz": 3 } `)
+	raw, err := parser.Parse([]byte(` { "foo": 1, "bar": 2, "baz": 3 } `))
 	noError(t, err)
 	val, ok := raw.(map[string]interface{})
 	equals(t, true, ok)

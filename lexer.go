@@ -56,6 +56,11 @@ type Lexer struct {
 	ps    *Parser
 }
 
+// Scan creates a Lexer that scans the give string
+func Scan(s string) *Lexer {
+	return &Lexer{str: []byte(s)}
+}
+
 func (l *Lexer) readDefault(c byte) (tk Token, err error) {
 	switch c {
 	case ' ', '\t', '\n', '\r':

@@ -14,7 +14,7 @@ func expectToken(t *testing.T, token json5.Token, expected json5.TokenType) {
 }
 
 func TestReadString(t *testing.T) {
-	lexer := json5.NewLexer(` "foo" `)
+	lexer := json5.Scan(` "foo" `)
 	t0, err := lexer.Token()
 	noError(t, err)
 	expectToken(t, t0, json5.TypeString)
@@ -25,7 +25,7 @@ func TestReadString(t *testing.T) {
 }
 
 func TestReadEscapeChar(t *testing.T) {
-	lexer := json5.NewLexer(` "foo\"bar" `)
+	lexer := json5.Scan(` "foo\"bar" `)
 	t0, err := lexer.Token()
 	noError(t, err)
 	expectToken(t, t0, json5.TypeString)
@@ -43,7 +43,7 @@ func TestReadValidEscapeChars(t *testing.T) {
 		"\"", "\\", "/", "\b", "\f", "\n", "\r", "\t",
 	}
 	for idx, sample := range samples {
-		lexer := json5.NewLexer(sample)
+		lexer := json5.Scan(sample)
 		t0, err := lexer.Token()
 		noError(t, err)
 		expectToken(t, t0, json5.TypeString)
@@ -59,7 +59,7 @@ func TestReadInvalidEscapeChars(t *testing.T) {
 		`"\a"`, `"\e"`, `"\v"`, `"\'"`, `"\?"`, `"\x"`,
 	}
 	for _, sample := range samples {
-		lexer := json5.NewLexer(sample)
+		lexer := json5.Scan(sample)
 		t0, err := lexer.Token()
 		hasError(t, err, "unexpected character")
 		expectToken(t, t0, json5.TypeNone)
@@ -67,7 +67,7 @@ func TestReadInvalidEscapeChars(t *testing.T) {
 }
 
 func TestReadIntegerNumber(t *testing.T) {
-	lexer := json5.NewLexer(` 5 `)
+	lexer := json5.Scan(` 5 `)
 	t0, err := lexer.Token()
 	noError(t, err)
 	expectToken(t, t0, json5.TypeNumber)
@@ -78,7 +78,7 @@ func TestReadIntegerNumber(t *testing.T) {
 }
 
 func TestReadNegativeIntegerNumber(t *testing.T) {
-	lexer := json5.NewLexer(` -10 `)
+	lexer := json5.Scan(` -10 `)
 	t0, err := lexer.Token()
 	noError(t, err)
 	expectToken(t, t0, json5.TypeNumber)
@@ -89,7 +89,7 @@ func TestReadNegativeIntegerNumber(t *testing.T) {
 }
 
 func TestReadFloatNumber(t *testing.T) {
-	lexer := json5.NewLexer(` 12.566 `)
+	lexer := json5.Scan(` 12.566 `)
 	t0, err := lexer.Token()
 	noError(t, err)
 	expectToken(t, t0, json5.TypeNumber)
@@ -100,7 +100,7 @@ func TestReadFloatNumber(t *testing.T) {
 }
 
 func TestReadExponentNumber(t *testing.T) {
-	lexer := json5.NewLexer(` 3.14e8 `)
+	lexer := json5.Scan(` 3.14e8 `)
 	t0, err := lexer.Token()
 	noError(t, err)
 	expectToken(t, t0, json5.TypeNumber)
@@ -122,7 +122,7 @@ func TestReadValidNumbers(t *testing.T) {
 		0.0, 100.0, 124000.0, 120400.0,
 	}
 	for idx, sample := range samples {
-		lexer := json5.NewLexer(sample)
+		lexer := json5.Scan(sample)
 		t0, err := lexer.Token()
 		noError(t, err)
 		expectToken(t, t0, json5.TypeNumber)
@@ -134,14 +134,14 @@ func TestReadValidNumbers(t *testing.T) {
 }
 
 func TestReadInvalidNumber(t *testing.T) {
-	lexer := json5.NewLexer(` 3.e8 `)
+	lexer := json5.Scan(` 3.e8 `)
 	t0, err := lexer.Token()
 	hasError(t, err, "unexpected character")
 	expectToken(t, t0, json5.TypeNone)
 }
 
 func TestReadBool(t *testing.T) {
-	lexer := json5.NewLexer(` true false `)
+	lexer := json5.Scan(` true false `)
 	t0, err := lexer.Token()
 	noError(t, err)
 	expectToken(t, t0, json5.TypeBool)
@@ -156,7 +156,7 @@ func TestReadBool(t *testing.T) {
 }
 
 func TestReadNull(t *testing.T) {
-	lexer := json5.NewLexer(` null `)
+	lexer := json5.Scan(` null `)
 	t0, err := lexer.Token()
 	noError(t, err)
 	expectToken(t, t0, json5.TypeNull)
@@ -182,7 +182,7 @@ func TestReadInWhitespaces(t *testing.T) {
 	for idx, line := range samples {
 		expectedType := expectedTypes[idx]
 		for _, sample := range line {
-			lexer := json5.NewLexer(sample)
+			lexer := json5.Scan(sample)
 			t0, err := lexer.Token()
 			noError(t, err)
 			expectToken(t, t0, expectedType)
@@ -194,14 +194,14 @@ func TestReadInWhitespaces(t *testing.T) {
 }
 
 func TestReadInvalidLiteral(t *testing.T) {
-	lexer := json5.NewLexer(` falsy `)
+	lexer := json5.Scan(` falsy `)
 	t0, err := lexer.Token()
 	hasError(t, err, "unexpected token")
 	expectToken(t, t0, json5.TypeNone)
 }
 
 func TestReadSingleLineComment(t *testing.T) {
-	lexer := json5.NewLexer(`
+	lexer := json5.Scan(`
 	// This is a comment
 	null
 	`)
@@ -215,7 +215,7 @@ func TestReadSingleLineComment(t *testing.T) {
 }
 
 func TestReadMultipleLineComment(t *testing.T) {
-	lexer := json5.NewLexer(`
+	lexer := json5.Scan(`
 	/* =================
 	 * This is a comment
 	 * Ignore me
@@ -233,7 +233,7 @@ func TestReadMultipleLineComment(t *testing.T) {
 }
 
 func TestReadUnclosedComment(t *testing.T) {
-	lexer := json5.NewLexer(`
+	lexer := json5.Scan(`
 	null /* ==== Unclosed comment ====
 	`)
 	t0, err := lexer.Token()
