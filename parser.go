@@ -141,8 +141,8 @@ func (p *Parser) parseEnd(tk Token) (err error) {
 }
 
 // Parse parses the JSON bytes
-func (p *Parser) Parse(s string) (value interface{}, err error) {
-	lexer := NewLexer(s)
+func (p *Parser) Parse(s []byte) (value interface{}, err error) {
+	lexer := Lexer{str: s}
 	for {
 		tk, e := lexer.Token()
 		if e != nil {

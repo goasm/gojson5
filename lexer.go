@@ -49,16 +49,11 @@ type Token struct {
 
 // Lexer reads and tokenizes a JSON string
 type Lexer struct {
-	str   string
+	str   []byte
 	pos   int
 	state lexerState
 	buf   stringBuffer
 	ps    *Parser
-}
-
-// NewLexer creates a JSON5 Lexer
-func NewLexer(str string) *Lexer {
-	return &Lexer{str: str}
 }
 
 func (l *Lexer) readDefault(c byte) (tk Token, err error) {
@@ -363,7 +358,7 @@ func (l *Lexer) readLiteral(c byte) (tk Token, err error) {
 			return
 		}
 	}
-	err = badTokenError(l.str[p0:l.pos], p0)
+	err = badTokenError(string(l.str[p0:l.pos]), p0)
 	return
 }
 
