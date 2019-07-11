@@ -15,6 +15,7 @@ const (
 	stateEnd
 )
 
+// Parser represents a JSON5 parser
 type Parser struct {
 	state parserState
 	stack stack
@@ -139,6 +140,7 @@ func (p *Parser) parseEnd(tk Token) (err error) {
 	return
 }
 
+// Parse parses the JSON bytes
 func (p *Parser) Parse(s string) (value interface{}, err error) {
 	lexer := NewLexer(s)
 	for {
