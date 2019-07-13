@@ -18,7 +18,8 @@ const (
 // Parser represents a JSON5 parser
 type Parser struct {
 	state parserState
-	stack stack
+	stage stateStack
+	stack valueStack
 	cache pair
 	value interface{}
 }
