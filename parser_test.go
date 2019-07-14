@@ -90,3 +90,35 @@ func TestParseNestedObject(t *testing.T) {
 	equals(t, 1, len(val))
 	equals(t, int64(3), val["baz"])
 }
+
+func TestParseNestedMixedStruct(t *testing.T) {
+	parser := json5.Parser{}
+	raw, err := parser.Parse([]byte(`
+	{
+		"foo": 1,
+		"bar": [1, 2],
+		"baz": {
+			"qux": [1, 2],
+			"quux": {
+				"quuz": 100,
+				"corge": 200
+			}
+		}
+	}
+	`))
+	noError(t, err)
+	val, ok := raw.(map[string]interface{})
+	equals(t, true, ok)
+	equals(t, 3, len(val))
+	equals(t, int64(1), val["foo"])
+	barVal, ok := val["bar"].([]interface{})
+	equals(t, true, ok)
+	equals(t, 2, len(barVal))
+	bazVal, ok := val["baz"].(map[string]interface{})
+	equals(t, true, ok)
+	equals(t, 2, len(bazVal))
+	quuxVal, ok := bazVal["quux"].(map[string]interface{})
+	equals(t, true, ok)
+	equals(t, int64(100), quuxVal["quuz"])
+	equals(t, int64(200), quuxVal["corge"])
+}
