@@ -21,12 +21,12 @@ type Parser struct {
 	stage stateStack
 	stack valueStack
 	cache pair
-	value interface{}
 }
 
 func (p *Parser) parseStart(tk Token) (err error) {
 	switch tk.Type {
 	case TypeArrayBegin:
+		p.stage.Push(p.state)
 		p.state = stateBeforeArrayItem
 		p.stack.Push(make([]interface{}, 0))
 	case TypeObjectBegin:
@@ -34,7 +34,7 @@ func (p *Parser) parseStart(tk Token) (err error) {
 		p.stack.Push(make(map[string]interface{}))
 	case TypeString, TypeNumber, TypeBool, TypeNull:
 		p.state = stateEnd
-		p.value = tk.Value
+		p.stack.Push(tk.Value)
 	default:
 		err = errors.New("unexpected token")
 	}
@@ -44,6 +44,8 @@ func (p *Parser) parseStart(tk Token) (err error) {
 func (p *Parser) parseBeforeArrayItem(tk Token) (err error) {
 	switch tk.Type {
 	case TypeArrayBegin:
+		p.stage.Push(p.state)
+		// p.state = stateBeforeArrayItem
 		p.stack.Push(make([]interface{}, 0))
 	case TypeObjectBegin:
 		p.state = stateBeforePropertyName
@@ -53,9 +55,14 @@ func (p *Parser) parseBeforeArrayItem(tk Token) (err error) {
 		arr := p.stack.Top().([]interface{})
 		p.stack.elements[p.stack.Size()-1] = append(arr, tk.Value)
 	case TypeArrayEnd:
-		// FIXME:(restore state)
-		p.state = stateEnd
-		p.value = p.stack.Pop()
+		p.state = p.stage.Pop()
+		if p.state == stateStart {
+			p.state = stateEnd
+		} else {
+			value := p.stack.Pop()
+			arr := p.stack.Top().([]interface{})
+			p.stack.elements[p.stack.Size()-1] = append(arr, value)
+		}
 	default:
 		err = errors.New("unexpected token")
 	}
@@ -67,9 +74,14 @@ func (p *Parser) parseAfterArrayItem(tk Token) (err error) {
 	case TypeValueSep:
 		p.state = stateBeforeArrayItem
 	case TypeArrayEnd:
-		// FIXME:(restore state)
-		p.state = stateEnd
-		p.value = p.stack.Pop()
+		p.state = p.stage.Pop()
+		if p.state == stateStart {
+			p.state = stateEnd
+		} else {
+			value := p.stack.Pop()
+			arr := p.stack.Top().([]interface{})
+			p.stack.elements[p.stack.Size()-1] = append(arr, value)
+		}
 	default:
 		err = errors.New("unexpected token")
 	}
@@ -167,7 +179,7 @@ func (p *Parser) Parse(s []byte) (value interface{}, err error) {
 			p.parseAfterPropertyValue(tk)
 		case stateEnd:
 			p.parseEnd(tk)
-			value = p.value
+			value = p.stack.Pop()
 			return
 		}
 	}

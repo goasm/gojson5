@@ -46,6 +46,24 @@ func TestParseArray(t *testing.T) {
 	equals(t, int64(3), val[2])
 }
 
+func TestParseNestedArray(t *testing.T) {
+	parser := json5.Parser{}
+	raw, err := parser.Parse([]byte(` [[[1, 2, 3]]] `))
+	noError(t, err)
+	val, ok := raw.([]interface{})
+	equals(t, true, ok)
+	equals(t, 1, len(val))
+	val, ok = val[0].([]interface{})
+	equals(t, true, ok)
+	equals(t, 1, len(val))
+	val, ok = val[0].([]interface{})
+	equals(t, true, ok)
+	equals(t, 3, len(val))
+	equals(t, int64(1), val[0])
+	equals(t, int64(2), val[1])
+	equals(t, int64(3), val[2])
+}
+
 func TestParseObject(t *testing.T) {
 	parser := json5.Parser{}
 	raw, err := parser.Parse([]byte(` { "foo": 1, "bar": 2, "baz": 3 } `))
