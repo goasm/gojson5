@@ -58,7 +58,7 @@ func (p *Parser) parseBeforeArrayItem(tk Token) (err error) {
 		p.stack.elements[p.stack.Size()-1] = append(arr, tk.Value)
 	case TypeArrayEnd:
 		p.state = p.stage.Pop()
-		if p.state == stateStart {
+		if p.stack.Size() == 1 {
 			p.state = stateEnd
 		} else {
 			value := p.stack.Pop()
@@ -77,7 +77,7 @@ func (p *Parser) parseAfterArrayItem(tk Token) (err error) {
 		p.state = stateBeforeArrayItem
 	case TypeArrayEnd:
 		p.state = p.stage.Pop()
-		if p.state == stateStart {
+		if p.stack.Size() == 1 {
 			p.state = stateEnd
 		} else {
 			value := p.stack.Pop()
