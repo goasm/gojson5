@@ -45,6 +45,29 @@ func (s *stateStack) Pop() parserState {
 	return e
 }
 
+// nameStack
+type nameStack struct {
+	elements []string
+}
+
+func (s *nameStack) Size() int {
+	return len(s.elements)
+}
+
+func (s *nameStack) Top() string {
+	return s.elements[len(s.elements)-1]
+}
+
+func (s *nameStack) Push(e string) {
+	s.elements = append(s.elements, e)
+}
+
+func (s *nameStack) Pop() string {
+	e := s.Top()
+	s.elements = s.elements[:len(s.elements)-1]
+	return e
+}
+
 // valueStack
 type valueStack struct {
 	elements []interface{}

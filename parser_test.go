@@ -74,3 +74,19 @@ func TestParseObject(t *testing.T) {
 	equals(t, int64(2), val["bar"])
 	equals(t, int64(3), val["baz"])
 }
+
+func TestParseNestedObject(t *testing.T) {
+	parser := json5.Parser{}
+	raw, err := parser.Parse([]byte(` { "foo": { "bar": { "baz": 3 } } } `))
+	noError(t, err)
+	val, ok := raw.(map[string]interface{})
+	equals(t, true, ok)
+	equals(t, 1, len(val))
+	val, ok = val["foo"].(map[string]interface{})
+	equals(t, true, ok)
+	equals(t, 1, len(val))
+	val, ok = val["bar"].(map[string]interface{})
+	equals(t, true, ok)
+	equals(t, 1, len(val))
+	equals(t, int64(3), val["baz"])
+}
