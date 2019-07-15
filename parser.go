@@ -174,22 +174,28 @@ func (p *Parser) Parse(s []byte) (value interface{}, err error) {
 		}
 		switch p.state {
 		case stateStart:
-			p.parseStart(tk)
+			err = p.parseStart(tk)
 		case stateBeforeArrayItem:
-			p.parseBeforeArrayItem(tk)
+			err = p.parseBeforeArrayItem(tk)
 		case stateAfterArrayItem:
-			p.parseAfterArrayItem(tk)
+			err = p.parseAfterArrayItem(tk)
 		case stateBeforePropertyName:
-			p.parseBeforePropertyName(tk)
+			err = p.parseBeforePropertyName(tk)
 		case stateAfterPropertyName:
-			p.parseAfterPropertyName(tk)
+			err = p.parseAfterPropertyName(tk)
 		case stateBeforePropertyValue:
-			p.parseBeforePropertyValue(tk)
+			err = p.parseBeforePropertyValue(tk)
 		case stateAfterPropertyValue:
-			p.parseAfterPropertyValue(tk)
+			err = p.parseAfterPropertyValue(tk)
 		case stateEnd:
-			p.parseEnd(tk)
+			err = p.parseEnd(tk)
+			if err != nil {
+				return
+			}
 			value = p.stack.Pop()
+			return
+		}
+		if err != nil {
 			return
 		}
 	}
