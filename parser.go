@@ -23,6 +23,29 @@ type Parser struct {
 	stack valueStack
 }
 
+func (p *Parser) popValue() (err error) {
+	p.state = p.stage.Pop()
+	if p.stack.Size() == 1 {
+		p.state = stateEnd
+	} else {
+		value := p.stack.Pop()
+		switch p.state {
+		case stateBeforeArrayItem:
+			arr := p.stack.Top().([]interface{})
+			p.stack.elements[p.stack.Size()-1] = append(arr, value)
+			// p.state = stateAfterArrayItem
+		case stateBeforePropertyValue:
+			name := p.paths.Pop()
+			obj := p.stack.Top().(map[string]interface{})
+			obj[name] = value
+			p.state = stateAfterPropertyValue
+		default:
+			err = errors.New("unexpected token")
+		}
+	}
+	return
+}
+
 func (p *Parser) parseStart(tk Token) (err error) {
 	switch tk.Type {
 	case TypeArrayBegin:
@@ -57,23 +80,7 @@ func (p *Parser) parseBeforeArrayItem(tk Token) (err error) {
 		arr := p.stack.Top().([]interface{})
 		p.stack.elements[p.stack.Size()-1] = append(arr, tk.Value)
 	case TypeArrayEnd:
-		p.state = p.stage.Pop()
-		if p.stack.Size() == 1 {
-			p.state = stateEnd
-		} else {
-			value := p.stack.Pop()
-			switch p.state {
-			case stateBeforeArrayItem:
-				arr := p.stack.Top().([]interface{})
-				p.stack.elements[p.stack.Size()-1] = append(arr, value)
-				// p.state = stateAfterArrayItem
-			case stateBeforePropertyValue:
-				name := p.paths.Pop()
-				obj := p.stack.Top().(map[string]interface{})
-				obj[name] = value
-				p.state = stateAfterPropertyValue
-			}
-		}
+		err = p.popValue()
 	default:
 		err = errors.New("unexpected token")
 	}
@@ -85,23 +92,7 @@ func (p *Parser) parseAfterArrayItem(tk Token) (err error) {
 	case TypeValueSep:
 		p.state = stateBeforeArrayItem
 	case TypeArrayEnd:
-		p.state = p.stage.Pop()
-		if p.stack.Size() == 1 {
-			p.state = stateEnd
-		} else {
-			value := p.stack.Pop()
-			switch p.state {
-			case stateBeforeArrayItem:
-				arr := p.stack.Top().([]interface{})
-				p.stack.elements[p.stack.Size()-1] = append(arr, value)
-				// p.state = stateAfterArrayItem
-			case stateBeforePropertyValue:
-				name := p.paths.Pop()
-				obj := p.stack.Top().(map[string]interface{})
-				obj[name] = value
-				p.state = stateAfterPropertyValue
-			}
-		}
+		err = p.popValue()
 	default:
 		err = errors.New("unexpected token")
 	}
@@ -114,23 +105,7 @@ func (p *Parser) parseBeforePropertyName(tk Token) (err error) {
 		p.state = stateAfterPropertyName
 		p.paths.Push(tk.Value.(string))
 	case TypeObjectEnd:
-		p.state = p.stage.Pop()
-		if p.stack.Size() == 1 {
-			p.state = stateEnd
-		} else {
-			value := p.stack.Pop()
-			switch p.state {
-			case stateBeforeArrayItem:
-				arr := p.stack.Top().([]interface{})
-				p.stack.elements[p.stack.Size()-1] = append(arr, value)
-				// p.state = stateAfterArrayItem
-			case stateBeforePropertyValue:
-				name := p.paths.Pop()
-				obj := p.stack.Top().(map[string]interface{})
-				obj[name] = value
-				p.state = stateAfterPropertyValue
-			}
-		}
+		err = p.popValue()
 	default:
 		err = errors.New("unexpected token")
 	}
@@ -174,23 +149,7 @@ func (p *Parser) parseAfterPropertyValue(tk Token) (err error) {
 	case TypeValueSep:
 		p.state = stateBeforePropertyName
 	case TypeObjectEnd:
-		p.state = p.stage.Pop()
-		if p.stack.Size() == 1 {
-			p.state = stateEnd
-		} else {
-			value := p.stack.Pop()
-			switch p.state {
-			case stateBeforeArrayItem:
-				arr := p.stack.Top().([]interface{})
-				p.stack.elements[p.stack.Size()-1] = append(arr, value)
-				// p.state = stateAfterArrayItem
-			case stateBeforePropertyValue:
-				name := p.paths.Pop()
-				obj := p.stack.Top().(map[string]interface{})
-				obj[name] = value
-				p.state = stateAfterPropertyValue
-			}
-		}
+		err = p.popValue()
 	default:
 		err = errors.New("unexpected token")
 	}
