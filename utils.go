@@ -119,3 +119,22 @@ func parseInteger(s string) (int64, error) {
 func parseFloat(s string) (float64, error) {
 	return strconv.ParseFloat(s, 64)
 }
+
+func parseToken(tk Token) (interface{}, error) {
+	switch tk.Type {
+	case TypeString:
+		return tk.Raw, nil
+	case TypeNumber:
+		return parseFloat(tk.Raw)
+	case TypeBool:
+		switch tk.Raw {
+		case "false":
+			return false, nil
+		case "true":
+			return true, nil
+		}
+	case TypeNull:
+		return nil, nil
+	}
+	return nil, badTokenError()
+}

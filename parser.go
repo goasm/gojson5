@@ -58,7 +58,8 @@ func (p *Parser) parseStart(tk Token) (err error) {
 		p.stack.Push(make(map[string]interface{}))
 	case TypeString, TypeNumber, TypeBool, TypeNull:
 		p.state = stateEnd
-		p.stack.Push(tk.Value)
+		value, err := parseToken(tk)
+		p.stack.Push(value)
 	default:
 		err = errors.New("unexpected token")
 	}
@@ -103,7 +104,7 @@ func (p *Parser) parseBeforePropertyName(tk Token) (err error) {
 	switch tk.Type {
 	case TypeString:
 		p.state = stateAfterPropertyName
-		p.paths.Push(tk.Value.(string))
+		p.paths.Push(tk.Raw)
 	case TypeObjectEnd:
 		err = p.popValue()
 	default:
@@ -135,7 +136,7 @@ func (p *Parser) parseBeforePropertyValue(tk Token) (err error) {
 	case TypeString, TypeNumber, TypeBool, TypeNull:
 		p.state = stateAfterPropertyValue
 		name := p.paths.Pop()
-		value := tk.Value
+		value, err := parseToken(tk)
 		obj := p.stack.Top().(map[string]interface{})
 		obj[name] = value
 	default:
