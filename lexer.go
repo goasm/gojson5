@@ -43,8 +43,8 @@ const (
 
 // Token represents an unit for syntax analysis
 type Token struct {
-	Type  TokenType
-	Value interface{}
+	Type TokenType
+	Raw  string
 }
 
 // Lexer reads and tokenizes a JSON string
@@ -140,25 +140,23 @@ func (l *Lexer) readValue(c byte) (tk Token, err error) {
 }
 
 func (l *Lexer) readPunctuator(c byte) (tk Token, err error) {
-	var kind TokenType
 	switch c {
 	case '[':
-		kind = TypeArrayBegin
+		tk = Token{TypeArrayBegin, "["}
 	case ']':
-		kind = TypeArrayEnd
+		tk = Token{TypeArrayEnd, "]"}
 	case '{':
-		kind = TypeObjectBegin
+		tk = Token{TypeObjectBegin, "{"}
 	case '}':
-		kind = TypeObjectEnd
+		tk = Token{TypeObjectEnd, "}"}
 	case ',':
-		kind = TypeValueSep
+		tk = Token{TypeValueSep, ","}
 	case ':':
-		kind = TypePairSep
+		tk = Token{TypePairSep, ":"}
 	default:
 		err = badCharError(c, l.pos)
 		return
 	}
-	tk = Token{kind, c}
 	l.pos++
 	return
 }
@@ -258,9 +256,7 @@ func (l *Lexer) readZero(c byte) (tk Token, err error) {
 		l.pos++
 	// case 'x', 'X': TODO: support hexadecimal number
 	default:
-		var value int64
-		value, err = parseInteger(l.buf.String())
-		tk = Token{TypeNumber, value}
+		tk = Token{TypeNumber, l.buf.String()}
 	}
 	return
 }
@@ -279,9 +275,7 @@ func (l *Lexer) readDecimalInteger(c byte) (tk Token, err error) {
 		l.buf.Append(c)
 		l.pos++
 	default:
-		var value int64
-		value, err = parseInteger(l.buf.String())
-		tk = Token{TypeNumber, value}
+		tk = Token{TypeNumber, l.buf.String()}
 	}
 	return
 }
@@ -308,9 +302,7 @@ func (l *Lexer) readDecimalFraction(c byte) (tk Token, err error) {
 		l.buf.Append(c)
 		l.pos++
 	default:
-		var value float64
-		value, err = parseFloat(l.buf.String())
-		tk = Token{TypeNumber, value}
+		tk = Token{TypeNumber, l.buf.String()}
 	}
 	return
 }
@@ -333,9 +325,7 @@ func (l *Lexer) readUnsignedDecimalExponent(c byte) (tk Token, err error) {
 		l.buf.Append(c)
 		l.pos++
 	default:
-		var value float64
-		value, err = parseFloat(l.buf.String())
-		tk = Token{TypeNumber, value}
+		tk = Token{TypeNumber, l.buf.String()}
 	}
 	return
 }
@@ -349,17 +339,17 @@ func (l *Lexer) readLiteral(c byte) (tk Token, err error) {
 	switch c {
 	case 'f':
 		if expectLiteral(l, "false") {
-			tk = Token{TypeBool, false}
+			tk = Token{TypeBool, "false"}
 			return
 		}
 	case 't':
 		if expectLiteral(l, "true") {
-			tk = Token{TypeBool, true}
+			tk = Token{TypeBool, "true"}
 			return
 		}
 	case 'n':
 		if expectLiteral(l, "null") {
-			tk = Token{TypeNull, nil}
+			tk = Token{TypeNull, "null"}
 			return
 		}
 	}
@@ -440,7 +430,7 @@ func (l *Lexer) Token() (tk Token, err error) {
 				err = e
 			} else {
 				// exit normally
-				tk = Token{TypeEOF, nil}
+				tk = Token{TypeEOF, ""}
 			}
 		}
 		// check result and error
