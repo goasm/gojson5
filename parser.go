@@ -1,7 +1,5 @@
 package json5
 
-import "errors"
-
 type parserState int
 
 const (
@@ -61,7 +59,7 @@ func (p *Parser) parseStart(tk Token) (err error) {
 		value, err := parseToken(tk)
 		p.stack.Push(value)
 	default:
-		err = errors.New("unexpected token")
+		err = badTokenError(tk.Raw, 0)
 	}
 	return
 }
@@ -83,7 +81,7 @@ func (p *Parser) parseBeforeArrayItem(tk Token) (err error) {
 	case TypeArrayEnd:
 		err = p.popValue()
 	default:
-		err = errors.New("unexpected token")
+		err = badTokenError(tk.Raw, 0)
 	}
 	return
 }
@@ -95,7 +93,7 @@ func (p *Parser) parseAfterArrayItem(tk Token) (err error) {
 	case TypeArrayEnd:
 		err = p.popValue()
 	default:
-		err = errors.New("unexpected token")
+		err = badTokenError(tk.Raw, 0)
 	}
 	return
 }
@@ -108,7 +106,7 @@ func (p *Parser) parseBeforePropertyName(tk Token) (err error) {
 	case TypeObjectEnd:
 		err = p.popValue()
 	default:
-		err = errors.New("unexpected token")
+		err = badTokenError(tk.Raw, 0)
 	}
 	return
 }
@@ -118,7 +116,7 @@ func (p *Parser) parseAfterPropertyName(tk Token) (err error) {
 	case TypePairSep:
 		p.state = stateBeforePropertyValue
 	default:
-		err = errors.New("unexpected token")
+		err = badTokenError(tk.Raw, 0)
 	}
 	return
 }
@@ -140,7 +138,7 @@ func (p *Parser) parseBeforePropertyValue(tk Token) (err error) {
 		obj := p.stack.Top().(map[string]interface{})
 		obj[name] = value
 	default:
-		err = errors.New("unexpected token")
+		err = badTokenError(tk.Raw, 0)
 	}
 	return
 }
@@ -152,14 +150,14 @@ func (p *Parser) parseAfterPropertyValue(tk Token) (err error) {
 	case TypeObjectEnd:
 		err = p.popValue()
 	default:
-		err = errors.New("unexpected token")
+		err = badTokenError(tk.Raw, 0)
 	}
 	return
 }
 
 func (p *Parser) parseEnd(tk Token) (err error) {
 	if tk.Type != TypeEOF {
-		err = errors.New("unexpected token")
+		err = badTokenError(tk.Raw, 0)
 	}
 	return
 }
