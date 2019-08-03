@@ -1,6 +1,7 @@
 package json5_test
 
 import (
+	"strings"
 	"testing"
 
 	json5 "github.com/goasm/gojson5"
@@ -18,7 +19,7 @@ func TestReadString(t *testing.T) {
 	t0, err := lexer.Token()
 	noError(t, err)
 	expectToken(t, t0, json5.TypeString)
-	equals(t, "foo", t0.Value)
+	equals(t, "foo", t0.Raw)
 	t1, err := lexer.Token()
 	noError(t, err)
 	expectToken(t, t1, json5.TypeEOF)
@@ -29,7 +30,7 @@ func TestReadEscapeChar(t *testing.T) {
 	t0, err := lexer.Token()
 	noError(t, err)
 	expectToken(t, t0, json5.TypeString)
-	equals(t, "foo\"bar", t0.Value)
+	equals(t, "foo\"bar", t0.Raw)
 	t1, err := lexer.Token()
 	noError(t, err)
 	expectToken(t, t1, json5.TypeEOF)
@@ -47,7 +48,7 @@ func TestReadValidEscapeChars(t *testing.T) {
 		t0, err := lexer.Token()
 		noError(t, err)
 		expectToken(t, t0, json5.TypeString)
-		equals(t, expectedValues[idx], t0.Value)
+		equals(t, expectedValues[idx], t0.Raw)
 		t1, err := lexer.Token()
 		noError(t, err)
 		expectToken(t, t1, json5.TypeEOF)
@@ -71,7 +72,7 @@ func TestReadIntegerNumber(t *testing.T) {
 	t0, err := lexer.Token()
 	noError(t, err)
 	expectToken(t, t0, json5.TypeNumber)
-	equals(t, int64(5), t0.Value)
+	equals(t, "5", t0.Raw)
 	t1, err := lexer.Token()
 	noError(t, err)
 	expectToken(t, t1, json5.TypeEOF)
@@ -82,7 +83,7 @@ func TestReadNegativeIntegerNumber(t *testing.T) {
 	t0, err := lexer.Token()
 	noError(t, err)
 	expectToken(t, t0, json5.TypeNumber)
-	equals(t, int64(-10), t0.Value)
+	equals(t, "-10", t0.Raw)
 	t1, err := lexer.Token()
 	noError(t, err)
 	expectToken(t, t1, json5.TypeEOF)
@@ -93,7 +94,7 @@ func TestReadFloatNumber(t *testing.T) {
 	t0, err := lexer.Token()
 	noError(t, err)
 	expectToken(t, t0, json5.TypeNumber)
-	equals(t, 12.566, t0.Value)
+	equals(t, "12.566", t0.Raw)
 	t1, err := lexer.Token()
 	noError(t, err)
 	expectToken(t, t1, json5.TypeEOF)
@@ -104,7 +105,7 @@ func TestReadExponentNumber(t *testing.T) {
 	t0, err := lexer.Token()
 	noError(t, err)
 	expectToken(t, t0, json5.TypeNumber)
-	equals(t, 314000000.0, t0.Value)
+	equals(t, "3.14e8", t0.Raw)
 	t1, err := lexer.Token()
 	noError(t, err)
 	expectToken(t, t1, json5.TypeEOF)
@@ -112,21 +113,17 @@ func TestReadExponentNumber(t *testing.T) {
 
 func TestReadValidNumbers(t *testing.T) {
 	samples := []string{
-		"0", "1", "12", "1204",
-		"0.2", "1.2", "12.4", "12.04",
-		"0e2", "1e2", "12.4e4", "12.04e4",
+		" 0 ", " 1 ", " 12 ", " 1204 ",
+		" 0.2 ", " 1.2 ", " 12.4 ", " 12.04 ",
+		" 0e2 ", " 1e2 ", " 12.4e4 ", " 12.04e4 ",
 	}
-	expectedValues := []interface{}{
-		int64(0), int64(1), int64(12), int64(1204),
-		0.2, 1.2, 12.4, 12.04,
-		0.0, 100.0, 124000.0, 120400.0,
-	}
-	for idx, sample := range samples {
+	for _, sample := range samples {
+		expectedValue := strings.Trim(sample, " ")
 		lexer := json5.Scan(sample)
 		t0, err := lexer.Token()
 		noError(t, err)
 		expectToken(t, t0, json5.TypeNumber)
-		equals(t, expectedValues[idx], t0.Value)
+		equals(t, expectedValue, t0.Raw)
 		t1, err := lexer.Token()
 		noError(t, err)
 		expectToken(t, t1, json5.TypeEOF)
@@ -145,11 +142,11 @@ func TestReadBool(t *testing.T) {
 	t0, err := lexer.Token()
 	noError(t, err)
 	expectToken(t, t0, json5.TypeBool)
-	equals(t, true, t0.Value)
+	equals(t, "true", t0.Raw)
 	t1, err := lexer.Token()
 	noError(t, err)
 	expectToken(t, t1, json5.TypeBool)
-	equals(t, false, t1.Value)
+	equals(t, "false", t1.Raw)
 	t2, err := lexer.Token()
 	noError(t, err)
 	expectToken(t, t2, json5.TypeEOF)
@@ -160,7 +157,7 @@ func TestReadNull(t *testing.T) {
 	t0, err := lexer.Token()
 	noError(t, err)
 	expectToken(t, t0, json5.TypeNull)
-	equals(t, nil, t0.Value)
+	equals(t, "null", t0.Raw)
 	t1, err := lexer.Token()
 	noError(t, err)
 	expectToken(t, t1, json5.TypeEOF)
@@ -208,7 +205,7 @@ func TestReadSingleLineComment(t *testing.T) {
 	t0, err := lexer.Token()
 	noError(t, err)
 	expectToken(t, t0, json5.TypeNull)
-	equals(t, nil, t0.Value)
+	equals(t, "null", t0.Raw)
 	t1, err := lexer.Token()
 	noError(t, err)
 	expectToken(t, t1, json5.TypeEOF)
@@ -226,7 +223,7 @@ func TestReadMultipleLineComment(t *testing.T) {
 	t0, err := lexer.Token()
 	noError(t, err)
 	expectToken(t, t0, json5.TypeNull)
-	equals(t, nil, t0.Value)
+	equals(t, "null", t0.Raw)
 	t1, err := lexer.Token()
 	noError(t, err)
 	expectToken(t, t1, json5.TypeEOF)
@@ -239,7 +236,7 @@ func TestReadUnclosedComment(t *testing.T) {
 	t0, err := lexer.Token()
 	noError(t, err)
 	expectToken(t, t0, json5.TypeNull)
-	equals(t, nil, t0.Value)
+	equals(t, "null", t0.Raw)
 	t1, err := lexer.Token()
 	hasError(t, err, "unexpected end of JSON")
 	expectToken(t, t1, json5.TypeNone)
