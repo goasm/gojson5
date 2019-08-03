@@ -140,6 +140,5 @@ func parseToken(tk Token) (interface{}, error) {
 	case TypeNull:
 		return nil, nil
 	}
-	// TODO:(token index)
-	return nil, badTokenError()
+	panic("unreachable")
 }

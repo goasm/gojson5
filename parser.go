@@ -38,7 +38,7 @@ func (p *Parser) popValue() (err error) {
 			obj[name] = value
 			p.state = stateAfterPropertyValue
 		default:
-			err = errors.New("unexpected token")
+			panic("unreachable")
 		}
 	}
 	return
@@ -56,7 +56,11 @@ func (p *Parser) parseStart(tk Token) (err error) {
 		p.stack.Push(make(map[string]interface{}))
 	case TypeString, TypeNumber, TypeBool, TypeNull:
 		p.state = stateEnd
-		value, err := parseToken(tk)
+		value, e := parseToken(tk)
+		if e != nil {
+			err = e
+			return
+		}
 		p.stack.Push(value)
 	default:
 		err = badTokenError(tk.Raw, 0)
@@ -76,7 +80,11 @@ func (p *Parser) parseBeforeArrayItem(tk Token) (err error) {
 		p.stack.Push(make(map[string]interface{}))
 	case TypeString, TypeNumber, TypeBool, TypeNull:
 		p.state = stateAfterArrayItem
-		value, err := parseToken(tk)
+		value, e := parseToken(tk)
+		if e != nil {
+			err = e
+			return
+		}
 		arr := p.stack.Top().([]interface{})
 		p.stack.elements[p.stack.Size()-1] = append(arr, value)
 	case TypeArrayEnd:
@@ -134,8 +142,12 @@ func (p *Parser) parseBeforePropertyValue(tk Token) (err error) {
 		p.stack.Push(make(map[string]interface{}))
 	case TypeString, TypeNumber, TypeBool, TypeNull:
 		p.state = stateAfterPropertyValue
+		value, e := parseToken(tk)
+		if e != nil {
+			err = e
+			return
+		}
 		name := p.paths.Pop()
-		value, err := parseToken(tk)
 		obj := p.stack.Top().(map[string]interface{})
 		obj[name] = value
 	default:
