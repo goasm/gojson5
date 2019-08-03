@@ -141,11 +141,11 @@ func TestReadBool(t *testing.T) {
 	lexer := json5.Scan(` true false `)
 	t0, err := lexer.Token()
 	noError(t, err)
-	expectToken(t, t0, json5.TypeBool)
+	expectToken(t, t0, json5.TypeTrue)
 	equals(t, "true", t0.Raw)
 	t1, err := lexer.Token()
 	noError(t, err)
-	expectToken(t, t1, json5.TypeBool)
+	expectToken(t, t1, json5.TypeFalse)
 	equals(t, "false", t1.Raw)
 	t2, err := lexer.Token()
 	noError(t, err)
@@ -173,7 +173,7 @@ func TestReadInWhitespaces(t *testing.T) {
 	expectedTypes := []json5.TokenType{
 		json5.TypeString,
 		json5.TypeNumber,
-		json5.TypeBool,
+		json5.TypeTrue,
 		json5.TypeNull,
 	}
 	for idx, line := range samples {
