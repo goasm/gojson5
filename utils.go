@@ -127,16 +127,10 @@ func parseToken(tk Token) (interface{}, error) {
 	case TypeNumber:
 		// TODO:(int or float)
 		return parseFloat(tk.Raw)
-	case TypeBool:
-		// TODO:(ext flag)
-		switch tk.Raw {
-		case "false":
-			return false, nil
-		case "true":
-			return true, nil
-		default:
-			// error
-		}
+	case TypeFalse:
+		return false, nil
+	case TypeTrue:
+		return true, nil
 	case TypeNull:
 		return nil, nil
 	}

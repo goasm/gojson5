@@ -54,7 +54,7 @@ func (p *Parser) parseStart(tk Token) (err error) {
 		p.stage.Push(p.state)
 		p.state = stateBeforePropertyName
 		p.stack.Push(make(map[string]interface{}))
-	case TypeString, TypeNumber, TypeBool, TypeNull:
+	case TypeString, TypeNumber, TypeFalse, TypeTrue, TypeNull:
 		p.state = stateEnd
 		value, e := parseToken(tk)
 		if e != nil {
@@ -78,7 +78,7 @@ func (p *Parser) parseBeforeArrayItem(tk Token) (err error) {
 		p.stage.Push(p.state)
 		p.state = stateBeforePropertyName
 		p.stack.Push(make(map[string]interface{}))
-	case TypeString, TypeNumber, TypeBool, TypeNull:
+	case TypeString, TypeNumber, TypeFalse, TypeTrue, TypeNull:
 		p.state = stateAfterArrayItem
 		value, e := parseToken(tk)
 		if e != nil {
@@ -140,7 +140,7 @@ func (p *Parser) parseBeforePropertyValue(tk Token) (err error) {
 		p.stage.Push(p.state)
 		p.state = stateBeforePropertyName
 		p.stack.Push(make(map[string]interface{}))
-	case TypeString, TypeNumber, TypeBool, TypeNull:
+	case TypeString, TypeNumber, TypeFalse, TypeTrue, TypeNull:
 		p.state = stateAfterPropertyValue
 		value, e := parseToken(tk)
 		if e != nil {

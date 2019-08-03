@@ -15,7 +15,8 @@ const (
 	TypePairSep
 	TypeString
 	TypeNumber
-	TypeBool
+	TypeFalse
+	TypeTrue
 	TypeNull
 	TypeEOF
 )
@@ -339,12 +340,12 @@ func (l *Lexer) readLiteral(c byte) (tk Token, err error) {
 	switch c {
 	case 'f':
 		if expectLiteral(l, "false") {
-			tk = Token{TypeBool, "false"}
+			tk = Token{TypeFalse, "false"}
 			return
 		}
 	case 't':
 		if expectLiteral(l, "true") {
-			tk = Token{TypeBool, "true"}
+			tk = Token{TypeTrue, "true"}
 			return
 		}
 	case 'n':
