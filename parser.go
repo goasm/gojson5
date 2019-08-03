@@ -76,8 +76,9 @@ func (p *Parser) parseBeforeArrayItem(tk Token) (err error) {
 		p.stack.Push(make(map[string]interface{}))
 	case TypeString, TypeNumber, TypeBool, TypeNull:
 		p.state = stateAfterArrayItem
+		value, err := parseToken(tk)
 		arr := p.stack.Top().([]interface{})
-		p.stack.elements[p.stack.Size()-1] = append(arr, tk.Value)
+		p.stack.elements[p.stack.Size()-1] = append(arr, value)
 	case TypeArrayEnd:
 		err = p.popValue()
 	default:
