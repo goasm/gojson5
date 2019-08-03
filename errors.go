@@ -8,22 +8,18 @@ type SyntaxError struct {
 	index   int
 }
 
-func newSyntaxError(message string, index int) *SyntaxError {
-	return &SyntaxError{message, index}
-}
-
 func (e *SyntaxError) Error() string {
 	return fmt.Sprintf("json5: %s at position %d", e.message, e.index)
 }
 
 func badCharError(ch byte, index int) *SyntaxError {
-	return newSyntaxError(fmt.Sprintf("unexpected character: %c", ch), index)
+	return &SyntaxError{fmt.Sprintf("unexpected character: %c", ch), index}
 }
 
 func badTokenError(token string, index int) *SyntaxError {
-	return newSyntaxError(fmt.Sprintf("unexpected token: %s", token), index)
+	return &SyntaxError{fmt.Sprintf("unexpected token: %s", token), index}
 }
 
 func badEOF(index int) *SyntaxError {
-	return newSyntaxError("unexpected end of JSON", index)
+	return &SyntaxError{"unexpected end of JSON", index}
 }
