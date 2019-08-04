@@ -14,7 +14,8 @@ const (
 	TypeValueSep
 	TypePairSep
 	TypeString
-	TypeNumber
+	TypeInteger
+	TypeFloat
 	TypeFalse
 	TypeTrue
 	TypeNull
@@ -257,7 +258,7 @@ func (l *Lexer) readZero(c byte) (tk Token, err error) {
 		l.pos++
 	// case 'x', 'X': TODO: support hexadecimal number
 	default:
-		tk = Token{TypeNumber, l.buf.String()}
+		tk = Token{TypeInteger, l.buf.String()}
 	}
 	return
 }
@@ -276,7 +277,7 @@ func (l *Lexer) readDecimalInteger(c byte) (tk Token, err error) {
 		l.buf.Append(c)
 		l.pos++
 	default:
-		tk = Token{TypeNumber, l.buf.String()}
+		tk = Token{TypeInteger, l.buf.String()}
 	}
 	return
 }
@@ -303,7 +304,7 @@ func (l *Lexer) readDecimalFraction(c byte) (tk Token, err error) {
 		l.buf.Append(c)
 		l.pos++
 	default:
-		tk = Token{TypeNumber, l.buf.String()}
+		tk = Token{TypeFloat, l.buf.String()}
 	}
 	return
 }
@@ -326,7 +327,7 @@ func (l *Lexer) readUnsignedDecimalExponent(c byte) (tk Token, err error) {
 		l.buf.Append(c)
 		l.pos++
 	default:
-		tk = Token{TypeNumber, l.buf.String()}
+		tk = Token{TypeFloat, l.buf.String()}
 	}
 	return
 }

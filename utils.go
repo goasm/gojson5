@@ -124,8 +124,9 @@ func parseToken(tk Token) (interface{}, error) {
 	switch tk.Type {
 	case TypeString:
 		return tk.Raw, nil
-	case TypeNumber:
-		// TODO:(int or float)
+	case TypeInteger:
+		return parseInteger(tk.Raw)
+	case TypeFloat:
 		return parseFloat(tk.Raw)
 	case TypeFalse:
 		return false, nil
