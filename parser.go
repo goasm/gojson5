@@ -32,7 +32,7 @@ func (p *Parser) popValue() (err error) {
 		case stateBeforeArrayItem:
 			arr := p.stack.Top().([]interface{})
 			p.stack.elements[p.stack.Size()-1] = append(arr, value)
-			// p.state = stateAfterArrayItem
+			p.state = stateAfterArrayItem
 		case stateBeforePropertyValue:
 			name := p.paths.Pop()
 			obj := p.stack.Top().(map[string]interface{})
