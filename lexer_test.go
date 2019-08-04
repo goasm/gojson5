@@ -71,7 +71,7 @@ func TestReadIntegerNumber(t *testing.T) {
 	lexer := json5.Scan(` 5 `)
 	t0, err := lexer.Token()
 	noError(t, err)
-	expectToken(t, t0, json5.TypeNumber)
+	expectToken(t, t0, json5.TypeInteger)
 	equals(t, "5", t0.Raw)
 	t1, err := lexer.Token()
 	noError(t, err)
@@ -82,7 +82,7 @@ func TestReadNegativeIntegerNumber(t *testing.T) {
 	lexer := json5.Scan(` -10 `)
 	t0, err := lexer.Token()
 	noError(t, err)
-	expectToken(t, t0, json5.TypeNumber)
+	expectToken(t, t0, json5.TypeInteger)
 	equals(t, "-10", t0.Raw)
 	t1, err := lexer.Token()
 	noError(t, err)
@@ -93,7 +93,7 @@ func TestReadFloatNumber(t *testing.T) {
 	lexer := json5.Scan(` 12.566 `)
 	t0, err := lexer.Token()
 	noError(t, err)
-	expectToken(t, t0, json5.TypeNumber)
+	expectToken(t, t0, json5.TypeFloat)
 	equals(t, "12.566", t0.Raw)
 	t1, err := lexer.Token()
 	noError(t, err)
@@ -104,7 +104,7 @@ func TestReadExponentNumber(t *testing.T) {
 	lexer := json5.Scan(` 3.14e8 `)
 	t0, err := lexer.Token()
 	noError(t, err)
-	expectToken(t, t0, json5.TypeNumber)
+	expectToken(t, t0, json5.TypeFloat)
 	equals(t, "3.14e8", t0.Raw)
 	t1, err := lexer.Token()
 	noError(t, err)
@@ -172,7 +172,7 @@ func TestReadInWhitespaces(t *testing.T) {
 	}
 	expectedTypes := []json5.TokenType{
 		json5.TypeString,
-		json5.TypeNumber,
+		json5.TypeInteger,
 		json5.TypeTrue,
 		json5.TypeNull,
 	}
