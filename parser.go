@@ -15,7 +15,7 @@ const (
 
 // Parser represents a JSON5 parser
 type Parser struct {
-	lexer *Lexer
+	Lexer
 	state parserState
 	stage stateStack
 	paths nameStack
@@ -64,7 +64,7 @@ func (p *Parser) parseStart(tk Token) (err error) {
 		}
 		p.stack.Push(value)
 	default:
-		err = badTokenError(tk.Raw, p.lexer.pos)
+		err = badTokenError(tk.Raw, p.pos)
 	}
 	return
 }
@@ -91,7 +91,7 @@ func (p *Parser) parseBeforeArrayItem(tk Token) (err error) {
 	case TypeArrayEnd:
 		err = p.popValue()
 	default:
-		err = badTokenError(tk.Raw, p.lexer.pos)
+		err = badTokenError(tk.Raw, p.pos)
 	}
 	return
 }
@@ -103,7 +103,7 @@ func (p *Parser) parseAfterArrayItem(tk Token) (err error) {
 	case TypeArrayEnd:
 		err = p.popValue()
 	default:
-		err = badTokenError(tk.Raw, p.lexer.pos)
+		err = badTokenError(tk.Raw, p.pos)
 	}
 	return
 }
@@ -116,7 +116,7 @@ func (p *Parser) parseBeforePropertyName(tk Token) (err error) {
 	case TypeObjectEnd:
 		err = p.popValue()
 	default:
-		err = badTokenError(tk.Raw, p.lexer.pos)
+		err = badTokenError(tk.Raw, p.pos)
 	}
 	return
 }
@@ -126,7 +126,7 @@ func (p *Parser) parseAfterPropertyName(tk Token) (err error) {
 	case TypePairSep:
 		p.state = stateBeforePropertyValue
 	default:
-		err = badTokenError(tk.Raw, p.lexer.pos)
+		err = badTokenError(tk.Raw, p.pos)
 	}
 	return
 }
@@ -152,7 +152,7 @@ func (p *Parser) parseBeforePropertyValue(tk Token) (err error) {
 		obj := p.stack.Top().(map[string]interface{})
 		obj[name] = value
 	default:
-		err = badTokenError(tk.Raw, p.lexer.pos)
+		err = badTokenError(tk.Raw, p.pos)
 	}
 	return
 }
@@ -164,23 +164,23 @@ func (p *Parser) parseAfterPropertyValue(tk Token) (err error) {
 	case TypeObjectEnd:
 		err = p.popValue()
 	default:
-		err = badTokenError(tk.Raw, p.lexer.pos)
+		err = badTokenError(tk.Raw, p.pos)
 	}
 	return
 }
 
 func (p *Parser) parseEnd(tk Token) (err error) {
 	if tk.Type != TypeEOF {
-		err = badTokenError(tk.Raw, p.lexer.pos)
+		err = badTokenError(tk.Raw, p.pos)
 	}
 	return
 }
 
 // Parse parses the JSON bytes
 func (p *Parser) Parse(s []byte) (value interface{}, err error) {
-	p.lexer = &Lexer{str: s}
+	p.str = s
 	for {
-		tk, e := p.lexer.Token()
+		tk, e := p.Token()
 		if e != nil {
 			err = e
 			return
