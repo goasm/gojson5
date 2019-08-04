@@ -4,9 +4,9 @@ package json5
 
 import "strconv"
 
-const _TokenType_name = "TypeNoneTypeArrayBeginTypeArrayEndTypeObjectBeginTypeObjectEndTypeValueSepTypePairSepTypeStringTypeNumberTypeFalseTypeTrueTypeNullTypeEOF"
+const _TokenType_name = "TypeNoneTypeArrayBeginTypeArrayEndTypeObjectBeginTypeObjectEndTypeValueSepTypePairSepTypeStringTypeIntegerTypeFloatTypeFalseTypeTrueTypeNullTypeEOF"
 
-var _TokenType_index = [...]uint8{0, 8, 22, 34, 49, 62, 74, 85, 95, 105, 114, 122, 130, 137}
+var _TokenType_index = [...]uint8{0, 8, 22, 34, 49, 62, 74, 85, 95, 106, 115, 124, 132, 140, 147}
 
 func (i TokenType) String() string {
 	if i < 0 || i >= TokenType(len(_TokenType_index)-1) {
