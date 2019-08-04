@@ -126,6 +126,7 @@ func (l *Lexer) readMultipleLineCommentEndAsterisk(c byte) (tk Token, err error)
 
 func (l *Lexer) readValue(c byte) (tk Token, err error) {
 	switch c {
+	// TODO: only this case '[', '{':
 	case '[', ']', '{', '}', ',', ':':
 		l.state = statePunctuator
 	case '"':
